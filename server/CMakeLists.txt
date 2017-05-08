@@ -16,7 +16,7 @@ target_include_directories(netfortune-server
     PUBLIC ${Boost_INCLUDE_DIR}
 )
 
-target_link_libraries(netfortune-server ${Boost_LIBRARIES})
+target_link_libraries(netfortune-server ${Boost_LIBRARIES} fproto)
 
 set_property(TARGET netfortune-server PROPERTY CXX_VERSION_REQUIRED ON)
 set_property(TARGET netfortune-server PROPERTY CXX_VERSION 14)
