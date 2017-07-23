@@ -1,47 +1,51 @@
-#include <chrono>
-#include <functional>
-#include <iostream>
+//
+// server.cpp
+// ~~~~~~~~~~
+//
+// Copyright (c) 2003-2017 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
 
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <ctime>
+#include <functional>
+#include <iostream>
+#include <string>
 
-void simple_async()
+#include "json.hpp"
+
+using boost::asio::ip::tcp;
+
+int main()
 {
-    boost::asio::io_service io;
-
-    boost::asio::deadline_timer t(io, boost::posix_time::seconds(5));
-    t.async_wait([](const boost::system::error_code &) {
-        std::cout << "Hello from async" << std::endl;
-    });
-
-    io.run();
-}
-
-void simple_repeated_async()
-{
-    boost::asio::io_service io;
-    std::function<void(const boost::system::error_code &, int *,
-                       boost::asio::deadline_timer *)>
-        printer;
-    printer = [&printer, &io](const boost::system::error_code &, int *count,
-                              boost::asio::deadline_timer *t) {
-        if (*count > 0) {
-            (*count)--;
-        }
-        t->async_wait(
-            boost::bind(printer, boost::asio::placeholders::error, &count, &t));
+    auto make_daytime_string = []() -> std::string {
+        std::time_t now = std::time(0);
+        return ctime(&now);
     };
+    try {
+        boost::asio::io_service io_service;
 
-    int count = 5;
-    boost::asio::deadline_timer t(io, boost::posix_time::seconds(5));
-    t.async_wait(
-        boost::bind(printer, boost::asio::placeholders::error, &count, &t));
-    io.run();
-}
+        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 13));
 
-int main(void)
-{
-    simple_async();
+        for (;;) {
+            tcp::socket socket(io_service);
+            acceptor.accept(socket);
+
+            std::string message = make_daytime_string();
+            message.erase(std::remove(message.begin(), message.end(), '\n'),
+                          message.end());
+            nlohmann::json j;
+            j["daytime"] = message;
+
+            boost::system::error_code ignored_error;
+            boost::asio::write(socket, boost::asio::buffer(j.dump(2)),
+                               ignored_error);
+        }
+    } catch (std::exception& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
     return 0;
 }

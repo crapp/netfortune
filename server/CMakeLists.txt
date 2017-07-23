@@ -14,7 +14,8 @@ message(WARNING "BOOST INC DIR ${Boost_INCLUDE_DIR}")
 target_include_directories(netfortune-server
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
     PUBLIC ${Boost_INCLUDE_DIR}
-)
+    PUBLIC "${CMAKE_SOURCE_DIR}/external/json"
+    )
 
 target_link_libraries(netfortune-server ${Boost_LIBRARIES} fproto)
 
