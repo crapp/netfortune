@@ -16,6 +16,7 @@
 
 # Echo client program
 import socket
+import json
 
 HOST = '127.0.0.1'    # The remote host
 PORT = 13              # The same port as used by the server
@@ -24,3 +25,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     # s.sendall(b'Hello, world')
     data = s.recv(1024)
 print('Received', repr(data))
+j = json.loads(data)
+print(json.dumps(j, indent=4, sort_keys=True))
