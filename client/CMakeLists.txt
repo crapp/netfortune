@@ -5,5 +5,5 @@ set(${PROJECT_NAME}_CLIENT_SOURCE
 
 add_executable(netfortune-client ${${PROJECT_NAME}_CLIENT_SOURCE})
 
-set_property(TARGET netfortune-client PROPERTY CXX_VERSION_REQUIRED ON)
-set_property(TARGET netfortune-client PROPERTY CXX_VERSION 14)
+set_property(TARGET netfortune-client PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET netfortune-client PROPERTY CXX_STANDARD 14)
