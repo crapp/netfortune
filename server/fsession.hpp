@@ -1,4 +1,4 @@
-// Netfortune server component
+// netfortune session
 // Copyright © 2017 Christian Rapp
 
 // This program is free software: you can redistribute it and/or modify
@@ -14,25 +14,16 @@
 // You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FSERVER_HPP
-#define FSERVER_HPP
+#ifndef FSESSION_HPP
+#define FSESSION_HPP
 
-#include <boost/asio.hpp>
-
-#include "fsession.hpp"
-
-class FServer
+class FSession
 {
 public:
-    FServer(boost::asio::io_service &io_service, short port);
-    virtual ~FServer();
-    FServer(const FServer &) = delete;
+    FSession();
+    virtual ~FSession();
 
 private:
-    tcp::acceptor acceptor;
-    tcp::socket socket;
-
-    void do_accept();
 };
 
-#endif /* FSERVER_HPP */
+#endif /* FSESSION_HPP */
