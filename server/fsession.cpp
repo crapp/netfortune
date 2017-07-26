@@ -1,4 +1,4 @@
-// Netfortune server component
+// netfortune session
 // Copyright © 2017 Christian Rapp
 
 // This program is free software: you can redistribute it and/or modify
@@ -13,30 +13,25 @@
 
 // You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-#include "fserver.hpp"
+//
 #include "fsession.hpp"
+
+#include <thread>
 
 namespace bas = boost::asio;
 
-FServer::FServer(boost::asio::io_service &io_service, short port)
-    : acceptor(io_service, bas::ip::tcp::endpoint(bas::ip::tcp::v4(), port)),
-      socket(io_service)
+FSession::FSession(bas::ip::tcp::socket socket) : socket(std::move(socket))
 {
-    std::cout << "Server started " << std::endl;
-    do_accept();
+    std::cout << "FSession created" << std::endl;
 }
 
-void FServer::do_accept()
+FSession::~FSession() { std::cout << "FSession destroyed" << std::endl; }
+
+void FSession::start()
 {
-    this->acceptor.async_accept(
-        this->socket, [this](boost::system::error_code ec) {
-            std::cout << "A client connected" << std::endl;
-            if (!ec) {
-                std::make_shared<FSession>(std::move(this->socket))->start();
-            }
-            std::cout << this->socket.is_open() << std::endl;
-            do_accept();
-        });
-    std::cout << "After accept" << std::endl;
+    std::cout << "Session started" << std::endl;
+    // this will block
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 }
+
+void FSession::do_read() {}

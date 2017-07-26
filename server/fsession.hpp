@@ -17,13 +17,23 @@
 #ifndef FSESSION_HPP
 #define FSESSION_HPP
 
-class FSession
+#include <cassert>
+#include <iostream>
+#include <memory>
+
+#include <boost/asio.hpp>
+
+class FSession : public std::enable_shared_from_this<FSession>
 {
 public:
-    FSession();
+    FSession(boost::asio::ip::tcp::socket socket);
     virtual ~FSession();
 
+    void start();
+
 private:
+    boost::asio::ip::tcp::socket socket;
+    void do_read();
 };
 
 #endif /* FSESSION_HPP */

@@ -16,6 +16,8 @@
 
 #include "json.hpp"
 
+#include "fserver.hpp"
+
 using boost::asio::ip::tcp;
 
 int main()
@@ -24,28 +26,35 @@ int main()
         std::time_t now = std::time(0);
         return ctime(&now);
     };
-    try {
-        boost::asio::io_service io_service;
 
-        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 13));
+    boost::asio::io_service io_service;
 
-        for (;;) {
-            tcp::socket socket(io_service);
-            acceptor.accept(socket);
+    FServer s(io_service, 13);
 
-            std::string message = make_daytime_string();
-            message.erase(std::remove(message.begin(), message.end(), '\n'),
-                          message.end());
-            nlohmann::json j;
-            j["daytime"] = message;
+    io_service.run();
 
-            boost::system::error_code ignored_error;
-            boost::asio::write(socket, boost::asio::buffer(j.dump(2)),
-                               ignored_error);
-        }
-    } catch (std::exception& e) {
-        std::cerr << e.what() << std::endl;
-    }
+    // try {
+    // boost::asio::io_service io_service;
+
+    // tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 13));
+
+    // for (;;) {
+    // tcp::socket socket(io_service);
+    //acceptor.accept(socket);
+
+    // std::string message = make_daytime_string();
+    //message.erase(std::remove(message.begin(), message.end(), '\n'),
+    //message.end());
+    // nlohmann::json j;
+    // j["daytime"] = message;
+
+    // boost::system::error_code ignored_error;
+    //boost::asio::write(socket, boost::asio::buffer(j.dump(2)),
+    // ignored_error);
+    //}
+    //} catch (std::exception& e) {
+    //std::cerr << e.what() << std::endl;
+    //}
 
     return 0;
 }

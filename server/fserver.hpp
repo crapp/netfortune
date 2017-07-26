@@ -19,18 +19,16 @@
 
 #include <boost/asio.hpp>
 
-#include "fsession.hpp"
-
 class FServer
 {
 public:
     FServer(boost::asio::io_service &io_service, short port);
-    virtual ~FServer();
+    virtual ~FServer() = default;
     FServer(const FServer &) = delete;
 
 private:
-    tcp::acceptor acceptor;
-    tcp::socket socket;
+    boost::asio::ip::tcp::acceptor acceptor;
+    boost::asio::ip::tcp::socket socket;
 
     void do_accept();
 };
