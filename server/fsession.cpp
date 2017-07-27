@@ -36,6 +36,8 @@ void FSession::start()
 
 void FSession::do_read()
 {
+    // https://stackoverflow.com/a/22291720
+    // https://stackoverflow.com/a/25687309/1127601
     this->data_buf.clear();
     this->data_buf.resize(2);
     auto self(shared_from_this());
