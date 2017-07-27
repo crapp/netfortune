@@ -34,4 +34,22 @@ void FSession::start()
     std::this_thread::sleep_for(std::chrono::seconds(10));
 }
 
-void FSession::do_read() {}
+void FSession::do_read()
+{
+    this->data_buf.clear();
+    this->data_buf.resize(2);
+    auto self(shared_from_this());
+    bas::async_read(
+        this->socket, bas::buffer(this->data_buf, this->data_buf.size()),
+        [this, self](boost::system::error_code ec, size_t bytes) {
+            unsigned short int message_length = 0;
+            if (!ec) {
+                assert(bytes == 2);
+                message_length =
+                    ((this->data_buf.at(0) << 8) & this->data_buf.at(1));
+                std::cout << message_length << std::endl;
+            }
+        });
+}
+
+void FSession::do_write() {}

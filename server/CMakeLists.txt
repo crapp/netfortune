@@ -20,6 +20,7 @@ target_include_directories(netfortune-server
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
     PUBLIC ${CMAKE_BINARY_DIR}
     PUBLIC ${Boost_INCLUDE_DIR}
+    PUBLIC "${CMAKE_SOURCE_DIR}/fproto"
     PUBLIC "${CMAKE_SOURCE_DIR}/external/json"
     )
 

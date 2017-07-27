@@ -23,17 +23,38 @@
 
 #include <boost/asio.hpp>
 
+#include "fproto.hpp"
+
+/**
+ * @brief FSession class represents one TCP Connection from server to client
+ * @detail
+ * A session handels reading and writing from/to the client.
+ * 1. Reading the first 6 Bytes to get the actual message length. Then read
+ *    the rest.
+ * 2. Parse the message with a json encoder and see if this is valid json
+ * 3. Get the information we need from the client and prepare the answer
+ *    accordingly
+ *
+ */
 class FSession : public std::enable_shared_from_this<FSession>
 {
 public:
     FSession(boost::asio::ip::tcp::socket socket);
     virtual ~FSession();
 
+    /**
+     * @brief Start the reading on FSession::socket
+     */
     void start();
 
 private:
-    boost::asio::ip::tcp::socket socket;
+    std::vector<char>
+        data_buf; /**< buffer containing the request and later the answer */
+    const size_t max_buf_size = 2048;    /**< maximum data buffer size */
+    boost::asio::ip::tcp::socket socket; /**< Socket this session uses */
+
     void do_read();
+    void do_write();
 };
 
 #endif /* FSESSION_HPP */
