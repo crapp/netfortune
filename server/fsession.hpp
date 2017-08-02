@@ -48,10 +48,12 @@ public:
     void start();
 
 private:
-    std::vector<char>
+    std::vector<unsigned char>
         data_buf; /**< buffer containing the request and later the answer */
     const size_t max_buf_size = 2048;    /**< maximum data buffer size */
     boost::asio::ip::tcp::socket socket; /**< Socket this session uses */
+
+    std::unique_ptr<Fproto> nfprot;
 
     void do_read();
     void do_write();

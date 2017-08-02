@@ -17,6 +17,9 @@
 #ifndef FPROTO_HPP
 #define FPROTO_HPP
 
+#include <stdexcept>
+
+#include "config_fproto.hpp"
 #include "json.hpp"
 
 class Fproto
@@ -24,8 +27,19 @@ class Fproto
 public:
     Fproto();
     virtual ~Fproto();
+    Fproto(const Fproto&) = delete;
+    Fproto(Fproto&&) = default;
+    Fproto& operator=(const Fproto&) = delete;
+
+    /**
+     * @brief Parse header bytes to get message length
+     *
+     * @param header_bytes The first two bytes copied from the session buffer
+     */
+    void init_header(std::array<unsigned char, 2> header_bytes);
 
 private:
+    unsigned short message_length;
 };
 
 #endif /* FPROTO_HPP */
