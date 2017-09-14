@@ -20,7 +20,8 @@
 
 namespace bas = boost::asio;
 
-FSession::FSession(bas::ip::tcp::socket socket) : socket(std::move(socket))
+FSession::FSession(bas::ip::tcp::socket socket)
+    : socket(std::move(socket)), nfprot(nullptr)
 {
     std::cout << "FSession created" << std::endl;
 }
@@ -34,4 +35,30 @@ void FSession::start()
     std::this_thread::sleep_for(std::chrono::seconds(10));
 }
 
-void FSession::do_read() {}
+void FSession::do_read()
+{
+    // https://stackoverflow.com/a/22291720
+    // https://stackoverflow.com/a/25687309/1127601
+    this->data_buf.clear();
+    this->data_buf.resize(2);
+    auto self = shared_from_this();
+    bas::async_read(
+        this->socket, bas::buffer(this->data_buf, this->data_buf.size()),
+        [this, self](boost::system::error_code ec, size_t bytes) {
+            if (!ec) {
+                this->nfprot = std::make_unique<Fproto>();
+                try {
+                    this->nfprot->init_header(
+                        {{this->data_buf.at(0), this->data_buf.at(1)}});
+                } catch (const std::out_of_range &ex) {
+                    std::cout << "CAN NOT PARSE HEADER BYTES" << std::endl;
+                    return;
+                } catch (const std::runtime_error &err) {
+                    std::cout << err.what() << std::endl;
+                    return;
+                }
+            }
+        });
+}
+
+void FSession::do_write() {}
