@@ -1,37 +1,24 @@
-//
-// server.cpp
-// ~~~~~~~~~~
-//
-// Copyright (c) 2003-2017 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-
-#include <boost/asio.hpp>
 #include <ctime>
 #include <functional>
 #include <iostream>
 #include <string>
 
-#include "json.hpp"
+#include <boost/asio.hpp>
+
+#include "spdlog/spdlog.h"
 
 #include "fserver.hpp"
 
-using boost::asio::ip::tcp;
-
 int main()
 {
-    auto make_daytime_string = []() -> std::string {
-        std::time_t now = std::time(0);
-        return ctime(&now);
-    };
-
+    auto console = spdlog::stdout_color_mt("console_logger");
+    console->info("");
     boost::asio::io_service io_service;
 
     FServer s(io_service, 13);
 
     io_service.run();
+    boost::asio::io_service io;
 
     // try {
     // boost::asio::io_service io_service;
