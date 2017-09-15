@@ -22,7 +22,7 @@ target_include_directories(netfortune-server
     PUBLIC ${Boost_INCLUDE_DIR}
     PUBLIC "${CMAKE_SOURCE_DIR}/external"
     PUBLIC "${CMAKE_SOURCE_DIR}/external/json"
-    PUBLIC "${CMAKE_SOURCE_DIR}/fproto"
+    PUBLIC "${CMAKE_SOURCE_DIR}/src/fproto"
     )
 
 target_link_libraries(netfortune-server

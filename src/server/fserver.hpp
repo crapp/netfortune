@@ -1,4 +1,4 @@
-// Netfortune data exchange protocol
+// Netfortune server component
 // Copyright © 2017 Christian Rapp
 
 // This program is free software: you can redistribute it and/or modify
@@ -14,32 +14,27 @@
 // You should have received a copy of the GNU General Public License
 //along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef FPROTO_HPP
-#define FPROTO_HPP
+#ifndef FSERVER_HPP
+#define FSERVER_HPP
 
-#include <stdexcept>
+#include <boost/asio.hpp>
 
-#include "config_fproto.hpp"
-#include "json.hpp"
+#include "spdlog/spdlog.h"
 
-class Fproto
+class FServer
 {
 public:
-    Fproto();
-    virtual ~Fproto();
-    Fproto(const Fproto&) = delete;
-    Fproto(Fproto&&) = default;
-    Fproto& operator=(const Fproto&) = delete;
-
-    /**
-     * @brief Parse header bytes to get message length
-     *
-     * @param header_bytes The first two bytes copied from the session buffer
-     */
-    void init_header(std::array<unsigned char, 2> header_bytes);
+    FServer(boost::asio::io_service &io_service, short port);
+    virtual ~FServer() = default;
+    FServer(const FServer &) = delete;
 
 private:
-    unsigned short message_length;
+    boost::asio::ip::tcp::acceptor acceptor;
+    boost::asio::ip::tcp::socket socket;
+    
+    std::shared_ptr<spdlog::logger> console;
+
+    void do_accept();
 };
 
-#endif /* FPROTO_HPP */
+#endif /* FSERVER_HPP */

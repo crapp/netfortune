@@ -7,10 +7,13 @@
 
 #include "spdlog/spdlog.h"
 
+#include "config_netfortune.hpp"
 #include "fserver.hpp"
 
 int main()
 {
+    // asynchronous logging
+    spdlog::set_async_mode(512, spdlog::async_overflow_policy::discard_log_msg);
     auto console = spdlog::stdout_color_mt("console_logger");
     console->info("");
     boost::asio::io_service io_service;

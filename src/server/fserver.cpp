@@ -23,7 +23,8 @@ FServer::FServer(boost::asio::io_service &io_service, short port)
     : acceptor(io_service, bas::ip::tcp::endpoint(bas::ip::tcp::v4(), port)),
       socket(io_service)
 {
-    std::cout << "Server started " << std::endl;
+    this->console = spdlog::get("console_logger");
+    this->console->info("Server started");
     do_accept();
 }
 
@@ -31,12 +32,14 @@ void FServer::do_accept()
 {
     this->acceptor.async_accept(
         this->socket, [this](boost::system::error_code ec) {
-            std::cout << "A client connected" << std::endl;
+            this->console->debug("A client connected");
             if (!ec) {
+                this->console->debug("EC OK starting my session");
                 std::make_shared<FSession>(std::move(this->socket))->start();
             }
-            std::cout << this->socket.is_open() << std::endl;
+            this->console->debug_if(this->socket.is_open(), "Socket is open");
+
             do_accept();
         });
-    std::cout << "After accept" << std::endl;
+    this->console->debug("After accept");
 }
