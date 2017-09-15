@@ -31,7 +31,7 @@ public:
 private:
     boost::asio::ip::tcp::acceptor acceptor;
     boost::asio::ip::tcp::socket socket;
-    
+
     std::shared_ptr<spdlog::logger> console;
 
     void do_accept();

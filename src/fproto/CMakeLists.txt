@@ -6,9 +6,6 @@ set(${PROJECT_NAME}_fproto_src
     ${CMAKE_CURRENT_SOURCE_DIR}/fproto.cpp
     )
 
-if(NOT FPROTO_MESSAGE_MAX)
-    set(FPROTO_MESSAGE_MAX 2048)
-endif()
 
 add_library(fproto ${${PROJECT_NAME}_fproto_src} ${${PROJECT_NAME}_fproto_src})
 

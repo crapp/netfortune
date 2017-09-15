@@ -2,6 +2,7 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include <boost/asio.hpp>
 
@@ -13,15 +14,24 @@
 int main()
 {
     // asynchronous logging
-    spdlog::set_async_mode(512, spdlog::async_overflow_policy::discard_log_msg);
+    //spdlog::set_async_mode(512, spdlog::async_overflow_policy::discard_log_msg);
     auto console = spdlog::stdout_color_mt("console_logger");
-    console->info("");
+    std::stringstream ss;
+    ss << NETFORTUNE_VERSION_MAJOR << "." << NETFORTUNE_VERSION_MINOR;
+#ifdef netfortune_VERSION_PATCH
+    ss << "." << NETFORTUNE_VERSION_PATCH;
+#endif
+
+    console->info("Netfortune Server Version " + ss.str());
     boost::asio::io_service io_service;
 
     FServer s(io_service, 13);
 
     io_service.run();
-    boost::asio::io_service io;
+
+    spdlog::drop_all();
+
+    //boost::asio::io_service io;
 
     // try {
     // boost::asio::io_service io_service;

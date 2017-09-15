@@ -16,23 +16,19 @@
 //
 #include "fsession.hpp"
 
-#include <thread>
-
 namespace bas = boost::asio;
 
 FSession::FSession(bas::ip::tcp::socket socket)
     : socket(std::move(socket)), nfprot(nullptr)
 {
-    std::cout << "FSession created" << std::endl;
+    this->console = spdlog::get("console_logger");
+    this->console->debug("FSession created");
 }
-
-FSession::~FSession() { std::cout << "FSession destroyed" << std::endl; }
 
 void FSession::start()
 {
-    std::cout << "Session started" << std::endl;
+    this->console->debug("Session started");
     // this will block
-    std::this_thread::sleep_for(std::chrono::seconds(10));
 }
 
 void FSession::do_read()
@@ -51,10 +47,10 @@ void FSession::do_read()
                     this->nfprot->init_header(
                         {{this->data_buf.at(0), this->data_buf.at(1)}});
                 } catch (const std::out_of_range &ex) {
-                    std::cout << "CAN NOT PARSE HEADER BYTES" << std::endl;
+                    this->console->error("CAN NOT PARSE HEADER BYTES");
                     return;
                 } catch (const std::runtime_error &err) {
-                    std::cout << err.what() << std::endl;
+                    this->console->error(err.what());
                     return;
                 }
             }

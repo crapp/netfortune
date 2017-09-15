@@ -24,7 +24,7 @@ FServer::FServer(boost::asio::io_service &io_service, short port)
       socket(io_service)
 {
     this->console = spdlog::get("console_logger");
-    this->console->info("Server started");
+    this->console->debug("Server object started");
     do_accept();
 }
 
