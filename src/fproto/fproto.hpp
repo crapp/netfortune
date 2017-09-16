@@ -19,6 +19,8 @@
 
 #include <stdexcept>
 
+#include "spdlog/spdlog.h"
+
 #include "config_netfortune.hpp"
 #include "json.hpp"
 
@@ -40,6 +42,8 @@ public:
 
 private:
     unsigned short message_length;
+
+    std::shared_ptr<spdlog::logger> console;
 };
 
 #endif /* FPROTO_HPP */

@@ -10,6 +10,7 @@ set(${PROJECT_NAME}_fproto_src
 add_library(fproto ${${PROJECT_NAME}_fproto_src} ${${PROJECT_NAME}_fproto_src})
 
 target_include_directories(fproto
+    PUBLIC ${CMAKE_SOURCE_DIR}/external
     PUBLIC ${CMAKE_SOURCE_DIR}/external/json
     PUBLIC ${CMAKE_BINARY_DIR}
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}

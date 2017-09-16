@@ -53,6 +53,8 @@ void FSession::do_read()
                     this->console->error(err.what());
                     return;
                 }
+            } else {
+                this->console->debug("No data can be read in this session");
             }
         });
 }
