@@ -1,0 +1,31 @@
+# This is the netfortune-server config file in TOML format
+
+# You have to comment the next line otherwise netfortune-server won't start
+changed_config = true
+
+[fortunes]
+
+# base folder of fortune files. netfortune will parse all text files recursively
+# and fill a sqlite database with the contents.
+base_folder = "/usr/share/fortune"
+# specify which fortune files should not be parsed
+blacklist = ""
+
+[database]
+
+#sqlite database location. wright permissions are required
+location = "/var/lib/netfortune"
+# create a statistics table to see which categories where querried most
+create_stats = true
+
+[logging]
+
+log_to_file = true
+logfile = "/var/log/netfortune"
+# logfile maximum size in megabytes
+logfile_max = 100
+log_to_stdout = true
+log_to_syslog = false
+# possible values are debug, info, warning or error
+minimum_loglevel = "warning"
+
