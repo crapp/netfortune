@@ -1,10 +1,12 @@
 (A) 2017-07-24 Define data exchange protocol based on json
 (A) 2017-07-24 Implement basic client application
-(A) 2017-07-24 Move Server to async model. Limit number of possible connections
+x 2017-09-16 2017-07-24 Move Server to async model.
+(A) 2017-09-16 Limit number of possible connections
+(B) 2017-09-16 Add configuration based on TOML
 (B) 2017-07-24 Make port and Host configurable via command line
 (C) 2017-07-24 Use a command line parser
-(C) 2017-07-24 Implement a binary search tree for already used fortunes.
-(A) 2017-07-24 Import fortunes to a sqlite database
+(D) 2017-07-24 Implement a binary search tree for already used fortunes.
+(A) 2017-07-24 Import fortunes to a sqlite database. Omit racist, sexist ones
 (A) 2017-07-24 Implement database access for server
 (D) 2017-07-24 Readme
 (C) 2017-07-24 Add cowsay to client

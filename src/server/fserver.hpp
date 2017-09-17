@@ -32,7 +32,7 @@ private:
     boost::asio::ip::tcp::acceptor acceptor;
     boost::asio::ip::tcp::socket socket;
 
-    std::shared_ptr<spdlog::logger> console;
+    std::shared_ptr<spdlog::logger> logger;
 
     void do_accept();
 };

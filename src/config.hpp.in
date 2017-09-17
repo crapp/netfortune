@@ -1,6 +1,9 @@
+// clang-format off
 #cmakedefine FPROTO_MESSAGE_MAX @FPROTO_MESSAGE_MAX@
+// clang-format on
+
+#define FPROTO_HEADER_SIZE 2
 
 #define NETFORTUNE_VERSION_MAJOR "@netfortune_VERSION_MAJOR@"
 #define NETFORTUNE_VERSION_MINOR "@netfortune_VERSION_MINOR@"
 #define NETFORTUNE_VERSION_PATCH "@netfortune_VERSION_PATCH@"
-

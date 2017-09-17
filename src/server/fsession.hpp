@@ -41,25 +41,25 @@
 class FSession : public std::enable_shared_from_this<FSession>
 {
 public:
-    FSession(boost::asio::ip::tcp::socket socket);
-    virtual ~FSession() = default;
+	explicit FSession(boost::asio::ip::tcp::socket socket);
+	virtual ~FSession() = default;
 
-    /**
+	/**
      * @brief Start the reading on FSession::socket
      */
-    void start();
+	void start();
 
 private:
-    std::vector<unsigned char>
-        data_buf; /**< buffer containing the request and later the answer */
-    const size_t max_buf_size = 2048;    /**< maximum data buffer size */
-    boost::asio::ip::tcp::socket socket; /**< Socket this session uses */
+	std::vector<unsigned char>
+		data_buf; /**< buffer containing the request and later the answer */
+	const size_t max_buf_size = 2048;	/**< maximum data buffer size */
+	boost::asio::ip::tcp::socket socket; /**< Socket this session uses */
 
-    std::shared_ptr<spdlog::logger> console;
-    std::unique_ptr<Fproto> nfprot;
+	std::shared_ptr<spdlog::logger> logger;
+	std::unique_ptr<Fproto> nfprot;
 
-    void do_read();
-    void do_write();
+	void do_read();
+	void do_write();
 };
 
 #endif /* FSESSION_HPP */
