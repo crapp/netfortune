@@ -27,29 +27,29 @@
 class Fproto
 {
 public:
-	Fproto();
-	virtual ~Fproto() = default;
-	Fproto(const Fproto&) = delete;
-	Fproto(Fproto&&) = default;
-	Fproto& operator=(const Fproto&) = delete;
+    Fproto();
+    virtual ~Fproto() = default;
+    Fproto(const Fproto&) = delete;
+    Fproto(Fproto&&) = default;
+    Fproto& operator=(const Fproto&) = delete;
 
-	/**
+    /**
      * @brief Parse header bytes to get message length
      *
      * @param header_bytes The first two bytes copied from the session buffer
      */
-	void init_header(std::array<unsigned char, FPROTO_HEADER_SIZE> header_bytes);
+    void init_header(std::array<unsigned char, FPROTO_HEADER_SIZE> header_bytes);
 
-	void read_message(const std::vector<unsigned char>& message_bytes);
+    void read_message(const std::vector<unsigned char>& message_bytes);
 
-	unsigned short get_message_length() const;
+    unsigned short get_message_length() const;
 
 private:
-	unsigned short message_length;
+    unsigned short message_length;
 
-	nlohmann::json request;
+    nlohmann::json request;
 
-	std::shared_ptr<spdlog::logger> logger;
+    std::shared_ptr<spdlog::logger> logger;
 };
 
 #endif /* FPROTO_HPP */

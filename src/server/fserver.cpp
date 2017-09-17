@@ -20,29 +20,29 @@
 namespace bas = boost::asio;
 
 FServer::FServer(boost::asio::io_service &io_service, short port)
-	: acceptor(io_service, bas::ip::tcp::endpoint(bas::ip::tcp::v4(), port)),
-	  socket(io_service)
+    : acceptor(io_service, bas::ip::tcp::endpoint(bas::ip::tcp::v4(), port)),
+      socket(io_service)
 {
-	this->logger = spdlog::get("multi_logger");
-	this->logger->debug("Server object started");
-	do_accept();
+    this->logger = spdlog::get("multi_logger");
+    this->logger->debug("Server object started");
+    do_accept();
 }
 
 void FServer::do_accept()
 {
-	this->acceptor.async_accept(
-		this->socket, [this](boost::system::error_code ec) {
-			this->logger->debug("A client connected");
-			if (!ec) {
-				this->logger->debug("EC OK starting my session");
-				this->logger->info(
-					"New connection from " +
-					this->socket.remote_endpoint().address().to_string());
-				std::make_shared<FSession>(std::move(this->socket))->start();
-			}
-			this->logger->debug_if(this->socket.is_open(), "Socket is open");
+    this->acceptor.async_accept(
+        this->socket, [this](boost::system::error_code ec) {
+            this->logger->debug("A client connected");
+            if (!ec) {
+                this->logger->debug("EC OK starting my session");
+                this->logger->info(
+                    "New connection from " +
+                    this->socket.remote_endpoint().address().to_string());
+                std::make_shared<FSession>(std::move(this->socket))->start();
+            }
+            this->logger->debug_if(this->socket.is_open(), "Socket is open");
 
-			do_accept();
-		});
-	this->logger->debug("After accept");
+            do_accept();
+        });
+    this->logger->debug("After accept");
 }
