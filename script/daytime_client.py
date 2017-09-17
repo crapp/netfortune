@@ -18,12 +18,18 @@
 import socket
 import json
 
+send_data = {}
+send_data['category'] = 'fun'
+send_data['bla'] = 'blub'
+send_j_data = json.dumps(send_data)
+print 
 HOST = '127.0.0.1'    # The remote host
 PORT = 13              # The same port as used by the server
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
-    # s.sendall(b'Hello, world')
-    data = s.recv(1024)
-print('Received', repr(data))
-j = json.loads(data)
-print(json.dumps(j, indent=4, sort_keys=True))
+    s.sendall((len(send_j_data)).to_bytes(2, byteorder='big'))
+    s.sendall(send_j_data.encode())
+    # data = s.recv(1024)
+# print('Received', repr(data))
+# j = json.loads(data)
+# print(json.dumps(j, indent=4, sort_keys=True))
