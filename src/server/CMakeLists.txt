@@ -11,7 +11,7 @@ set(${PROJECT_NAME}_SERVER_SOURCE
 add_executable(netfortune-server
     "${${PROJECT_NAME}_SERVER_SOURCE}" "${${PROJECT_NAME}_SERVER_HEADER}")
 
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system filesystem)
 message(WARNING "BIN DIR ${CMAKE_CURRENT_BINARY_DIR}")
 message(WARNING "BOOST INC DIR ${Boost_INCLUDE_DIR}")
 find_package(Threads)

@@ -33,6 +33,7 @@
 
 #include <boost/asio.hpp>
 
+#include "cpptoml/cpptoml.h"
 #include "spdlog/spdlog.h"
 
 #include "config_netfortune.hpp"
