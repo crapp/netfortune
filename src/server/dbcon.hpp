@@ -61,7 +61,7 @@ const char* const TABLE_STAT = "statistic";
 class DBCon
 {
 public:
-    DBCon();
+    DBCon(std::shared_ptr<cpptoml::table> cfg);
     virtual ~DBCon() = default;
     DBCon(const DBCon&) = delete; /**< no copy constructor **/
 
