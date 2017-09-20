@@ -38,6 +38,7 @@
 #include "spdlog/spdlog.h"
 
 #include "config_netfortune.hpp"
+#include "configuration.hpp"
 #include "fserver.hpp"
 
 int main()
@@ -58,6 +59,17 @@ int main()
     } catch (const cpptoml::parse_exception &ex) {
         std::cerr << "Could not parse config file" << std::endl;
         std::cerr << ex.what() << std::endl;
+        return 1;
+    }
+
+    namespace nc = netfortune_configuration;
+    // check if config file was changed
+    bool config_changed = cfg->get_as<bool>(nc::CHANGED_CONFIG)
+                              .value_or(nc::CHANGED_CONFIG_DEFAULT);
+    if (!config_changed) {
+        std::cerr
+            << "You have to change the configuration file for netfortune server"
+            << std::endl;
         return 1;
     }
     // TODO: Add multiple sinks to our logger

@@ -36,7 +36,7 @@ namespace netfortune_configuration
 {
 // global
 const char* const CHANGED_CONFIG = "changed_config";
-const bool CHANGED_CONFIG_DEFAULT = false;
+const bool CHANGED_CONFIG_DEFAULT = true;
 
 // server
 const char* const SERVER = "server";
