@@ -27,6 +27,9 @@
 #ifndef CONFIGURATION_HPP
 #define CONFIGURATION_HPP
 
+#include <string>
+#include <vector>
+
 // configuration identifiers and default values
 
 namespace netfortune_configuration
@@ -44,9 +47,33 @@ const char* const SERVER_LISTEN_DEFAULT = "127.0.0.1";
 
 // fortunes
 
+const char* const FORTUNES = "fortunes";
+const char* const FORTUNES_BASE_FOLDER = "base_folder";
+const char* const FORTUNES_BASE_FOlDER_DEFAULT = "/usr/share/fortune";
+const char* const FORTUNES_BLACKLIST = "blacklist";
+const std::vector<std::string> FORTUNES_BLACKLIST_DEFAULT = {};
+
 // database
 
+const char* const DATABASE = "database";
+const char* const DATABASE_LOC = "location";
+const char* const DATABASE_LOC_DEFAULT = "/var/lib/netfortune";
+const char* const DATABASE_STATS = "create_stats";
+const bool DATABASE_STATS_DEFAULT = true;
+
 // logging
+
+const char* const LOGGING = "logging";
+const char* const LOGGING_FILE = "logfile";
+const char* const LOGGING_FILE_DEFAULT = "/var/log/netfortune";
+const char* const LOGFILE_MAX = "logfile_max";
+const unsigned int LOGFILE_MAX_DEFAULT = 100;
+const char* const LOGGING_STDOUT = "log_to_stdout";
+const bool LOGGING_STDOUT_DEFAULT = true;
+const char* const LOGGING_SYSLOG = "log_to_syslog";
+const bool LOGGING_SYSLOG_DEFAULT = false;
+const char* const LOGGING_MINLVL = "minimum_loglevel";
+const char* const LOGGING_MINLVL_DEFAULT = "warning";
 }
 
 #endif /* ifndef CONFIGURATION_HPP */

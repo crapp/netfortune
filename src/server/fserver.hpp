@@ -27,14 +27,18 @@
 #ifndef FSERVER_HPP
 #define FSERVER_HPP
 
+#include <memory>
+
 #include <boost/asio.hpp>
 
+#include "cpptoml/cpptoml.h"
 #include "spdlog/spdlog.h"
 
 class FServer
 {
 public:
-    FServer(boost::asio::io_service &io_service, short port);
+    FServer(boost::asio::io_service &io_service,
+            std::shared_ptr<cpptoml::table> cfg);
     virtual ~FServer() = default;
     FServer(const FServer &) = delete;
 
@@ -43,6 +47,8 @@ private:
     boost::asio::ip::tcp::socket socket;
 
     std::shared_ptr<spdlog::logger> logger;
+
+    std::shared_ptr<cpptoml::table> cfg;
 
     void do_accept();
 };

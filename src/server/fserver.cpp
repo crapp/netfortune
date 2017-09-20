@@ -27,12 +27,28 @@
 #include "fserver.hpp"
 #include "fsession.hpp"
 
-namespace bas = boost::asio;
+#include "configuration.hpp"
 
-FServer::FServer(boost::asio::io_service &io_service, short port)
-    : acceptor(io_service, bas::ip::tcp::endpoint(bas::ip::tcp::v4(), port)),
-      socket(io_service)
+namespace bas = boost::asio;
+namespace nc = netfortune_configuration;
+
+FServer::FServer(boost::asio::io_service &io_service,
+                 std::shared_ptr<cpptoml::table> cfg)
+    : acceptor(io_service), socket(io_service), cfg(cfg)
 {
+    // init the acceptor and bind it
+    unsigned int port = this->cfg
+                            ->get_as<unsigned int>(
+                                nc::SERVER + std::string(".") + nc::SERVER_PORT)
+                            .value_or(nc::SERVER_PORT_DEFAULT);
+    // TODO: ipv6 not supported
+    // FIXME: This will listen to all ip addresses.
+    bas::ip::tcp::endpoint endpoint(bas::ip::tcp::v4(), port);
+    this->acceptor.open(endpoint.protocol());
+    this->acceptor.bind(endpoint);
+    this->acceptor.listen();
+
+    // this->acceptor(io_service, bas::ip::tcp::endpoint(bas::ip::tcp::v4(), i));
     this->logger = spdlog::get("multi_logger");
     this->logger->debug("Server object started");
     do_accept();

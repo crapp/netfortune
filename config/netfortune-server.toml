@@ -14,7 +14,7 @@ listen_to = "127.0.0.1"
 # and fill a sqlite database with the contents.
 base_folder = "/usr/share/fortune"
 # specify which fortune files should not be parsed
-blacklist = ""
+blacklist = []
 
 [database]
 location = "/var/lib/netfortune"

@@ -32,6 +32,7 @@
 #include <string>
 
 #include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
 
 #include "cpptoml/cpptoml.h"
 #include "spdlog/spdlog.h"
@@ -41,6 +42,24 @@
 
 int main()
 {
+    std::shared_ptr<cpptoml::table> cfg = nullptr;
+    std::string cfg_file = "netfortune-server.toml";
+    if (!boost::filesystem::exists(cfg_file)) {
+        if (!boost::filesystem::exists("/etc/" + cfg_file)) {
+            std::cerr << "Can not find config file netfortune-server.toml"
+                      << std::endl;
+            return 1;
+        } else {
+            cfg_file = "/etc/" + cfg_file;
+        }
+    }
+    try {
+        cfg = cpptoml::parse_file("netfortune-server.toml");
+    } catch (const cpptoml::parse_exception &ex) {
+        std::cerr << "Could not parse config file" << std::endl;
+        std::cerr << ex.what() << std::endl;
+        return 1;
+    }
     // TODO: Add multiple sinks to our logger
     // std::vector<spdlog::sink_ptr> sinks;
     //sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_st>());
@@ -72,7 +91,7 @@ int main()
         io_service.stop();
     });
 
-    FServer s(io_service, 13);
+    FServer s(io_service, cfg);
 
     io_service.run();
 
