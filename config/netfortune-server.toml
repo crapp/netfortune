@@ -9,6 +9,8 @@ port = 13
 # specify which ip adresses the application should listen to
 # 0.0.0.0 means all ip adresses, 127.0.0.1 only listen on localhost
 listen_to = "127.0.0.1"
+use_ssl = false
+ssl_root_ca = ""
 
 [fortunes]
 # and fill a sqlite database with the contents.

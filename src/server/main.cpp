@@ -50,9 +50,8 @@ int main()
             std::cerr << "Can not find config file netfortune-server.toml"
                       << std::endl;
             return 1;
-        } else {
-            cfg_file = "/etc/" + cfg_file;
         }
+        cfg_file = "/etc/" + cfg_file;
     }
     try {
         cfg = cpptoml::parse_file("netfortune-server.toml");
@@ -94,18 +93,22 @@ int main()
     boost::asio::io_service io_service;
 
     boost::asio::signal_set signal_set(io_service, SIGINT, SIGTERM);
-    signal_set.async_wait([&io_service, &logger](
-        const boost::system::error_code &error, int signal_number) {
-        std::unordered_map<int, std::string> signal_name = {
-            {SIGINT, "SIGINT"}, {SIGTERM, "SIGTERM"}};
-        logger->debug("Got signal " + signal_name.at(signal_number) +
-                      "; stopping io_service.");
-        io_service.stop();
-    });
+    signal_set.async_wait(
+        [&io_service, &logger](const boost::system::error_code &error,
+                               int signal_number) {
+            std::unordered_map<int, std::string> signal_name = {
+                {SIGINT, "SIGINT"}, {SIGTERM, "SIGTERM"}};
+            logger->debug("Got signal " + signal_name.at(signal_number) +
+                          "; stopping io_service.");
+            io_service.stop();
+        });
 
-    FServer s(io_service, cfg);
-
-    io_service.run();
+    try {
+        FServer s(io_service, std::move(cfg));
+        io_service.run();
+    } catch (const std::exception &ex) {
+        logger->error(ex.what());
+    }
 
     spdlog::drop_all();
 

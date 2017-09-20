@@ -34,7 +34,7 @@ namespace nc = netfortune_configuration;
 
 FServer::FServer(boost::asio::io_service &io_service,
                  std::shared_ptr<cpptoml::table> cfg)
-    : acceptor(io_service), socket(io_service), cfg(cfg)
+    : acceptor(io_service), socket(io_service), cfg(std::move(cfg))
 {
     // init the acceptor and bind it
     unsigned int port = this->cfg
