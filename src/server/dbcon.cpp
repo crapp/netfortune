@@ -24,52 +24,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef DBCON_HPP
-#define DBCON_HPP
-
-#include <memory>
-
-#include <sqlite3.h>
-
-#include "cpptoml/cpptoml.h"
-#include "spdlog/spdlog.h"
+#include "dbcon.hpp"
 
 #include "configuration.hpp"
 
-/**
- * @brief DB related constants. Mostly table and column names
- */
-namespace dbcon_constants
+namespace nc = netfortune_configuration;
+
+DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(cfg)
 {
-const char* const TABLE_FORTUNE = "fortune";
-const char* const TABLE_FORTUNE_ID = "id";
-const char* const TABLE_FORTUNE_CATEGORY = "category";
-const char* const TABLE_FORTUNE_TEXT = "text";
-const char* const TABLE_FORTUNE_DATETIME = "datetime";
-
-const char* const TABLE_CATEGORY = "category";
-const char* const TABLE_CATEGORY_ID = "id";
-const char* const TABLE_CATEGORY_TEXT = "text";
-const char* const TABLE_CATEGORY_DATETIME = "datetime";
-
-const char* const TABLE_STAT = "statistic";
+    this->logger = spdlog::get("multi_logger");
 }
 
-/**
- * @brief Connection to sqlite database
- */
-class DBCon
+void DBCon::init_connection()
 {
-public:
-    DBCon(std::shared_ptr<cpptoml::table> cfg);
-    virtual ~DBCon() = default;
-    DBCon(const DBCon&) = delete; /**< no copy constructor **/
-
-private:
-    std::shared_ptr<spdlog::logger> logger;
-    std::shared_ptr<cpptoml::table> cfg;
-
-    void init_connection();
-};
-
-#endif /* DBCON_HPP */
+    // check if path exists
+    std::string db_path = this->cfg->get_as<std::string>(nc::DATABASE);
+}

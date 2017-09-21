@@ -24,52 +24,45 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef DBCON_HPP
-#define DBCON_HPP
+#ifndef UTILITY_HPP
+#define UTILITY_HPP
 
-#include <memory>
-
-#include <sqlite3.h>
-
-#include "cpptoml/cpptoml.h"
-#include "spdlog/spdlog.h"
-
-#include "configuration.hpp"
+#include <string>
 
 /**
- * @brief DB related constants. Mostly table and column names
+ * @brief Some utility functions for the project
  */
-namespace dbcon_constants
+namespace netfortune_utility
 {
-const char* const TABLE_FORTUNE = "fortune";
-const char* const TABLE_FORTUNE_ID = "id";
-const char* const TABLE_FORTUNE_CATEGORY = "category";
-const char* const TABLE_FORTUNE_TEXT = "text";
-const char* const TABLE_FORTUNE_DATETIME = "datetime";
-
-const char* const TABLE_CATEGORY = "category";
-const char* const TABLE_CATEGORY_ID = "id";
-const char* const TABLE_CATEGORY_TEXT = "text";
-const char* const TABLE_CATEGORY_DATETIME = "datetime";
-
-const char* const TABLE_STAT = "statistic";
+/**
+     * @brief Base case
+     *
+     * @tparam FirsT First parameter
+     * @param first
+     *
+     * @return
+     */
+template <typename FirsT>
+std::string toml_stringify(const FirsT &first)
+{
+    return first;
 }
 
 /**
- * @brief Connection to sqlite database
+ * @brief Function to chain to toml identifier strings with dots recursively
+ *
+ * @tparam T
+ * @tparam FirsT
+ * @param first First parameter
+ * @param t Paramter pack
+ *
+ * @return Chained string
  */
-class DBCon
+template <typename... T, typename FirsT>
+std::string toml_stringify(const FirsT &first, const T &... t)
 {
-public:
-    DBCon(std::shared_ptr<cpptoml::table> cfg);
-    virtual ~DBCon() = default;
-    DBCon(const DBCon&) = delete; /**< no copy constructor **/
+    return first + std::string(".") + toml_stringify(t...);
+}
+}
 
-private:
-    std::shared_ptr<spdlog::logger> logger;
-    std::shared_ptr<cpptoml::table> cfg;
-
-    void init_connection();
-};
-
-#endif /* DBCON_HPP */
+#endif /* ifndef UTILITY_HPP */
