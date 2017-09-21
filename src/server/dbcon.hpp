@@ -62,12 +62,14 @@ class DBCon
 {
 public:
     DBCon(std::shared_ptr<cpptoml::table> cfg);
-    virtual ~DBCon() = default;
+    virtual ~DBCon();
     DBCon(const DBCon&) = delete; /**< no copy constructor **/
 
 private:
-    std::shared_ptr<spdlog::logger> logger;
     std::shared_ptr<cpptoml::table> cfg;
+    std::shared_ptr<spdlog::logger> logger;
+
+    sqlite3* dbhandle;
 
     void init_connection();
 };

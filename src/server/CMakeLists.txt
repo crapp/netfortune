@@ -1,9 +1,11 @@
 set(${PROJECT_NAME}_SERVER_HEADER
     ${CMAKE_CURRENT_SOURCE_DIR}/configuration.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/dbcon.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fserver.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fsession.hpp
     )
 set(${PROJECT_NAME}_SERVER_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/dbcon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fserver.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fsession.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp

@@ -26,17 +26,47 @@
 
 #include "dbcon.hpp"
 
+#include <boost/filesystem.hpp>
+
 #include "configuration.hpp"
+#include "utility.hpp"
 
 namespace nc = netfortune_configuration;
+namespace nu = netfortune_utility;
 
 DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(cfg)
 {
     this->logger = spdlog::get("multi_logger");
+    this->init_connection();
+}
+
+DBCon::~DBCon()
+{
+    this->logger->debug("Closing sqlite dbhandle");
+    if (this->dbhandle) {
+        sqlite3_close(dbhandle);
+    }
 }
 
 void DBCon::init_connection()
 {
     // check if path exists
-    std::string db_path = this->cfg->get_as<std::string>(nc::DATABASE);
+    std::string path = this->cfg
+                           ->get_as<std::string>(nu::toml_stringify(
+                               nc::DATABASE, nc::DATABASE_LOC))
+                           .value_or(nc::DATABASE_LOC_DEFAULT);
+    boost::filesystem::path p(path);
+    // this will throw an exception if it doesn't work
+    boost::filesystem::create_directories(p);
+    int rc = sqlite3_open_v2(
+        std::string(p.string() + boost::filesystem::path::separator +
+                    "netfortune.db")
+            .c_str(),
+        &this->dbhandle,
+        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX,
+        NULL);
+    if (rc != SQLITE_OK) {
+        // TODO: This should throw. Destructor will close
+        sqlite3_close(dbhandle);
+    }
 }

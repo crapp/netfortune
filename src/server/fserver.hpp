@@ -34,6 +34,8 @@
 #include "cpptoml/cpptoml.h"
 #include "spdlog/spdlog.h"
 
+#include "dbcon.hpp"
+
 class FServer
 {
 public:
@@ -47,8 +49,8 @@ private:
     boost::asio::ip::tcp::socket socket;
 
     std::shared_ptr<spdlog::logger> logger;
-
     std::shared_ptr<cpptoml::table> cfg;
+    std::shared_ptr<DBCon> dbc;
 
     void do_accept();
 };

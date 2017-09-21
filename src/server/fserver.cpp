@@ -36,6 +36,11 @@ FServer::FServer(boost::asio::io_service &io_service,
                  std::shared_ptr<cpptoml::table> cfg)
     : acceptor(io_service), socket(io_service), cfg(std::move(cfg))
 {
+    this->logger = spdlog::get("multi_logger");
+    this->logger->debug("Server object started");
+
+    this->dbc = std::make_shared<DBCon>(this->cfg);
+
     // init the acceptor and bind it
     unsigned int port = this->cfg
                             ->get_as<unsigned int>(
@@ -48,9 +53,6 @@ FServer::FServer(boost::asio::io_service &io_service,
     this->acceptor.bind(endpoint);
     this->acceptor.listen();
 
-    // this->acceptor(io_service, bas::ip::tcp::endpoint(bas::ip::tcp::v4(), i));
-    this->logger = spdlog::get("multi_logger");
-    this->logger->debug("Server object started");
     do_accept();
 }
 

@@ -92,9 +92,6 @@ int main()
 
     logger->info("Netfortune Server Version " + ss.str());
 
-    logger->debug(netfortune_utility::toml_stringify(
-        nc::CHANGED_CONFIG, nc::DATABASE, nc::FORTUNES));
-
     boost::asio::io_service io_service;
 
     boost::asio::signal_set signal_set(io_service, SIGINT, SIGTERM);
