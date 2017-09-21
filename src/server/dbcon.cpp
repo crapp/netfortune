@@ -58,6 +58,7 @@ void DBCon::init_connection()
     boost::filesystem::path p(path);
     // this will throw an exception if it doesn't work
     boost::filesystem::create_directories(p);
+    // open databse in serial / mutex mode
     int rc = sqlite3_open_v2(
         std::string(p.string() + boost::filesystem::path::separator +
                     "netfortune.db")
@@ -66,7 +67,9 @@ void DBCon::init_connection()
         SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX,
         NULL);
     if (rc != SQLITE_OK) {
-        // TODO: This should throw. Destructor will close
-        sqlite3_close(dbhandle);
+        // throw error code and message
+        throw std::runtime_error(
+            "Could not open DB. Error: " + std::string(sqlite3_errstr(rc)) +
+            "\n" + std::string(sqlite3_errmsg(this->dbhandle)));
     }
 }

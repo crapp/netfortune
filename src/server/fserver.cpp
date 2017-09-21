@@ -29,6 +29,8 @@
 
 #include "configuration.hpp"
 
+#include <thread>
+
 namespace bas = boost::asio;
 namespace nc = netfortune_configuration;
 
@@ -52,6 +54,10 @@ FServer::FServer(boost::asio::io_service &io_service,
     this->acceptor.open(endpoint.protocol());
     this->acceptor.bind(endpoint);
     this->acceptor.listen();
+    auto myid = std::this_thread::get_id();
+    std::stringstream ss;
+    ss << myid;
+    this->logger->warn(ss.str());
 
     do_accept();
 }
@@ -61,6 +67,10 @@ void FServer::do_accept()
     this->acceptor.async_accept(
         this->socket, [this](boost::system::error_code ec) {
             this->logger->debug("A client connected");
+            auto myid = std::this_thread::get_id();
+            std::stringstream ss;
+            ss << myid;
+            this->logger->warn(ss.str());
             if (!ec) {
                 this->logger->debug("EC OK starting my session");
                 this->logger->info(
