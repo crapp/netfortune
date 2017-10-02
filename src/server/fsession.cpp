@@ -29,7 +29,7 @@
 namespace bas = boost::asio;
 
 FSession::FSession(bas::ip::tcp::socket socket)
-    : socket(std::move(socket)), nfprot(nullptr)
+    : socket(std::move(socket)), strand(socket.get_io_service()), nfprot(nullptr)
 {
     this->logger = spdlog::get("multi_logger");
     this->logger->debug("FSession created");
@@ -52,7 +52,9 @@ void FSession::do_read()
     // TODO: Simplify this code. Don't like these nested calls
     bas::async_read(
         this->socket, bas::buffer(this->data_buf, this->data_buf.size()),
-        [this, self](boost::system::error_code ec, size_t bytes) {
+        this->strand.wrap([this, self](boost::system::error_code ec,
+                                       size_t bytes ATTR_UNUSED) {
+            assert(bytes == this->data_buf.size());
             if (!ec) {
                 this->nfprot = std::make_unique<Fproto>();
                 try {
@@ -63,8 +65,10 @@ void FSession::do_read()
                     bas::async_read(
                         this->socket,
                         bas::buffer(this->data_buf, this->data_buf.size()),
-                        [this, self](boost::system::error_code ec,
-                                     size_t bytes) {
+                        this->strand.wrap([this, self](
+                                              boost::system::error_code ec,
+                                              size_t bytes ATTR_UNUSED) {
+                            assert(bytes == this->data_buf.size());
                             if (!ec) {
                                 try {
                                     this->nfprot->read_message(this->data_buf);
@@ -72,7 +76,7 @@ void FSession::do_read()
                                     this->logger->error(err.what());
                                 }
                             }
-                        });
+                        }));
                 } catch (const std::out_of_range &ex) {
                     this->logger->error("CAN NOT PARSE HEADER BYTES");
                     return;
@@ -83,7 +87,7 @@ void FSession::do_read()
             } else {
                 this->logger->debug("No data can be read in this session");
             }
-        });
+        }));
 }
 
 void FSession::do_write() {}

@@ -11,6 +11,7 @@ port = 13
 listen_to = "127.0.0.1"
 use_ssl = false
 ssl_root_ca = ""
+threads = 1
 
 [fortunes]
 # and fill a sqlite database with the contents.

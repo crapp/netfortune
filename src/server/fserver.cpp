@@ -36,7 +36,10 @@ namespace nc = netfortune_configuration;
 
 FServer::FServer(boost::asio::io_service &io_service,
                  std::shared_ptr<cpptoml::table> cfg)
-    : acceptor(io_service), socket(io_service), cfg(std::move(cfg))
+    : acceptor(io_service),
+      socket(io_service),
+      strand(io_service),
+      cfg(std::move(cfg))
 {
     this->logger = spdlog::get("multi_logger");
     this->logger->debug("Server object started");
@@ -65,7 +68,7 @@ FServer::FServer(boost::asio::io_service &io_service,
 void FServer::do_accept()
 {
     this->acceptor.async_accept(
-        this->socket, [this](boost::system::error_code ec) {
+        this->socket, this->strand.wrap([this](boost::system::error_code ec) {
             this->logger->debug("A client connected");
             auto myid = std::this_thread::get_id();
             std::stringstream ss;
@@ -81,6 +84,6 @@ void FServer::do_accept()
             this->logger->debug_if(this->socket.is_open(), "Socket is open");
 
             do_accept();
-        });
+        }));
     this->logger->debug("After accept");
 }

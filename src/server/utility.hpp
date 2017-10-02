@@ -29,19 +29,25 @@
 
 #include <string>
 
+#ifdef __GNUC__
+#define ATTR_UNUSED __attribute__((unused))
+#else
+#define ATTR_UNUSED
+#endif
+
 /**
  * @brief Some utility functions for the project
  */
 namespace netfortune_utility
 {
 /**
-     * @brief Base case
-     *
-     * @tparam FirsT First parameter
-     * @param first
-     *
-     * @return
-     */
+ * @brief Base case
+ *
+ * @tparam FirsT First parameter
+ * @param first
+ *
+ * @return
+ */
 template <typename FirsT>
 std::string toml_stringify(const FirsT &first)
 {

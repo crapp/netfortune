@@ -44,6 +44,8 @@ const char* const SERVER_PORT = "port";
 const unsigned int SERVER_PORT_DEFAULT = 13;
 const char* const SERVER_LISTEN = "listen_to";
 const char* const SERVER_LISTEN_DEFAULT = "127.0.0.1";
+const char* const SERVER_THREADS = "threads";
+const unsigned int SERVER_THREADS_DEFAULT = 1;
 
 // fortunes
 
