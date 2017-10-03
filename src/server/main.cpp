@@ -30,6 +30,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <thread>
+#include <vector>
 
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
@@ -95,16 +97,23 @@ int main()
     boost::asio::io_service io_service;
 
     boost::asio::signal_set signal_set(io_service, SIGINT, SIGTERM);
-    signal_set.async_wait([&io_service, &logger](
-        const boost::system::error_code &error, int signal_number) {
-        std::unordered_map<int, std::string> signal_name = {
-            {SIGINT, "SIGINT"}, {SIGTERM, "SIGTERM"}};
-        logger->debug("Got signal " + signal_name.at(signal_number) +
-                      "; stopping io_service.");
-        io_service.stop();
-    });
+    signal_set.async_wait(
+        [&io_service, &logger](const boost::system::error_code &ec ATTR_UNUSED,
+                               int signal_number) {
+            std::unordered_map<int, std::string> signal_name = {
+                {SIGINT, "SIGINT"}, {SIGTERM, "SIGTERM"}};
+            logger->debug("Got signal " + signal_name.at(signal_number) +
+                          "; stopping io_service.");
+            io_service.stop();
+        });
+
+    std::vector<std::thread> thread_pool;
 
     try {
+        auto nr_threads =
+            cfg->get_as<unsigned int>(netfortune_utility::toml_stringify(
+                                          nc::SERVER, nc::SERVER_THREADS))
+                .value_or(nc::SERVER_THREADS_DEFAULT);
         FServer s(io_service, std::move(cfg));
         io_service.run();
     } catch (const std::exception &ex) {

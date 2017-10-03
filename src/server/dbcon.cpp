@@ -34,7 +34,7 @@
 namespace nc = netfortune_configuration;
 namespace nu = netfortune_utility;
 
-DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(cfg)
+DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(std::move(cfg))
 {
     this->logger = spdlog::get("multi_logger");
     this->init_connection();
@@ -43,7 +43,7 @@ DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(cfg)
 DBCon::~DBCon()
 {
     this->logger->debug("Closing sqlite dbhandle");
-    if (this->dbhandle) {
+    if (this->dbhandle != nullptr) {
         sqlite3_close(dbhandle);
     }
 }
