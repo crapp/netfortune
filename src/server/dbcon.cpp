@@ -65,7 +65,7 @@ void DBCon::init_connection()
             .c_str(),
         &this->dbhandle,
         SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX,
-        NULL);
+        nullptr);
     if (rc != SQLITE_OK) {
         // throw error code and message
         throw std::runtime_error(

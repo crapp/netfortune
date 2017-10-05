@@ -27,8 +27,6 @@
 #ifndef FSESSION_HPP
 #define FSESSION_HPP
 
-#include <cassert>
-#include <iostream>
 #include <memory>
 
 #include <boost/asio.hpp>

@@ -114,8 +114,24 @@ int main()
             cfg->get_as<unsigned int>(netfortune_utility::toml_stringify(
                                           nc::SERVER, nc::SERVER_THREADS))
                 .value_or(nc::SERVER_THREADS_DEFAULT);
+        if (nr_threads == 0) {
+            logger->error("Zero threads do not make any sense");
+            return 1;
+        }
+
+        logger->debug("Will spawn " + std::to_string(nr_threads) +
+                      " additional threads");
+
         FServer s(io_service, std::move(cfg));
+
+        for (unsigned int i = 0; i < (nr_threads - 1); i++) {
+            thread_pool.emplace_back([&io_service]() { io_service.run(); });
+        }
+        // Main thread also calls run()
         io_service.run();
+        for (auto &t : thread_pool) {
+            t.join();
+        }
     } catch (const std::exception &ex) {
         logger->error(ex.what());
     }

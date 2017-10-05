@@ -27,7 +27,9 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
+#include <sstream>
 #include <string>
+#include <thread>
 
 #ifdef __GNUC__
 #define ATTR_UNUSED __attribute__((unused))
@@ -68,6 +70,20 @@ template <typename... T, typename FirsT>
 std::string toml_stringify(const FirsT &first, const T &... t)
 {
     return first + std::string(".") + toml_stringify(t...);
+}
+
+/**
+ * @brief Thread::id to string conversion
+ *
+ * @param id std::tread::id
+ *
+ * @return std::string
+ */
+std::string thread_id_to_string(const std::thread::id &id)
+{
+    std::stringstream ss;
+    ss << id;
+    return ss.str();
 }
 }
 

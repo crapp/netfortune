@@ -24,9 +24,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <cassert>
+#include <string>
+#include <thread>
+
 #include "fsession.hpp"
 
 namespace bas = boost::asio;
+namespace nu = netfortune_utility;
 
 FSession::FSession(bas::ip::tcp::socket socket)
     : socket(std::move(socket)), strand(socket.get_io_service()), nfprot(nullptr)
@@ -55,6 +60,8 @@ void FSession::do_read()
         this->strand.wrap([this, self](boost::system::error_code ec,
                                        size_t bytes ATTR_UNUSED) {
             assert(bytes == this->data_buf.size());
+            this->logger->debug("Thread: " + nu::thread_id_to_string(
+                                                 std::this_thread::get_id()));
             if (!ec) {
                 this->nfprot = std::make_unique<Fproto>();
                 try {
@@ -69,6 +76,9 @@ void FSession::do_read()
                                               boost::system::error_code ec,
                                               size_t bytes ATTR_UNUSED) {
                             assert(bytes == this->data_buf.size());
+                            this->logger->debug("Thread: " +
+                                                nu::thread_id_to_string(
+                                                    std::this_thread::get_id()));
                             if (!ec) {
                                 try {
                                     this->nfprot->read_message(this->data_buf);

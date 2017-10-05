@@ -11,6 +11,7 @@ port = 13
 listen_to = "127.0.0.1"
 use_ssl = false
 ssl_root_ca = ""
+# Number of threads netfortune server should use. Minimum is 1
 threads = 1
 
 [fortunes]
@@ -32,4 +33,3 @@ log_to_stdout = true
 log_to_syslog = false
 # possible values are debug, info, warning or error
 minimum_loglevel = "warning"
-
