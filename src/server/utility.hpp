@@ -79,7 +79,7 @@ std::string toml_stringify(const FirsT &first, const T &... t)
  *
  * @return std::string
  */
-std::string thread_id_to_string(const std::thread::id &id)
+inline std::string thread_id_to_string(const std::thread::id &id)
 {
     std::stringstream ss;
     ss << id;
