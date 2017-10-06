@@ -52,7 +52,7 @@ void DBCon::init_connection()
 {
     // check if path exists
     std::string path = this->cfg
-                           ->get_as<std::string>(nu::toml_stringify(
+                           ->get_qualified_as<std::string>(nu::toml_stringify(
                                nc::DATABASE, nc::DATABASE_LOC))
                            .value_or(nc::DATABASE_LOC_DEFAULT);
     boost::filesystem::path p(path);

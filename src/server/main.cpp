@@ -58,6 +58,7 @@ int main()
     }
     try {
         cfg = cpptoml::parse_file("netfortune-server.toml");
+        std::cout << (*cfg) << std::endl;
     } catch (const cpptoml::parse_exception &ex) {
         std::cerr << "Could not parse config file" << std::endl;
         std::cerr << ex.what() << std::endl;
@@ -110,10 +111,12 @@ int main()
     std::vector<std::thread> thread_pool;
 
     try {
-        auto nr_threads =
-            cfg->get_as<unsigned int>(netfortune_utility::toml_stringify(
-                                          nc::SERVER, nc::SERVER_THREADS))
-                .value_or(nc::SERVER_THREADS_DEFAULT);
+        auto s =
+            netfortune_utility::toml_stringify(nc::SERVER, nc::SERVER_THREADS);
+        auto nr_threads = cfg->get_qualified_as<unsigned int>(
+                                 netfortune_utility::toml_stringify(
+                                     nc::SERVER, nc::SERVER_THREADS))
+                              .value_or(nc::SERVER_THREADS_DEFAULT);
         if (nr_threads == 0) {
             logger->error("Zero threads do not make any sense");
             return 1;
@@ -122,10 +125,18 @@ int main()
         logger->debug("Will spawn " + std::to_string(nr_threads) +
                       " additional threads");
 
-        FServer s(io_service, std::move(cfg));
+        FServer server(io_service, std::move(cfg));
 
+        logger->info("Main thread id " + netfortune_utility::thread_id_to_string(
+                                             std::this_thread::get_id()));
         for (unsigned int i = 0; i < (nr_threads - 1); i++) {
-            thread_pool.emplace_back([&io_service]() { io_service.run(); });
+            logger->debug("Creating thread number " + std::to_string(0));
+            thread_pool.emplace_back([&io_service, &logger, i]() {
+                logger->info("Thread " + std::to_string(i) + " id: " +
+                             netfortune_utility::thread_id_to_string(
+                                 std::this_thread::get_id()));
+                io_service.run();
+            });
         }
         // Main thread also calls run()
         io_service.run();

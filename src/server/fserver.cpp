@@ -48,7 +48,7 @@ FServer::FServer(boost::asio::io_service &io_service,
 
     // init the acceptor and bind it
     unsigned int port = this->cfg
-                            ->get_as<unsigned int>(
+                            ->get_qualified_as<unsigned int>(
                                 nc::SERVER + std::string(".") + nc::SERVER_PORT)
                             .value_or(nc::SERVER_PORT_DEFAULT);
     // TODO: ipv6 not supported
@@ -57,10 +57,6 @@ FServer::FServer(boost::asio::io_service &io_service,
     this->acceptor.open(endpoint.protocol());
     this->acceptor.bind(endpoint);
     this->acceptor.listen();
-    auto myid = std::this_thread::get_id();
-    std::stringstream ss;
-    ss << myid;
-    this->logger->warn(ss.str());
 
     do_accept();
 }
@@ -70,12 +66,8 @@ void FServer::do_accept()
     this->acceptor.async_accept(
         this->socket, this->strand.wrap([this](boost::system::error_code ec) {
             this->logger->debug("A client connected");
-            auto myid = std::this_thread::get_id();
-            std::stringstream ss;
-            ss << myid;
-            this->logger->warn(ss.str());
             if (!ec) {
-                this->logger->debug("EC OK starting my session");
+                this->logger->debug("Starting new session");
                 this->logger->info(
                     "New connection from " +
                     this->socket.remote_endpoint().address().to_string());
@@ -85,5 +77,4 @@ void FServer::do_accept()
 
             do_accept();
         }));
-    this->logger->debug("After accept");
 }

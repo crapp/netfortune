@@ -25,6 +25,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cassert>
+#include <chrono>
 #include <string>
 #include <thread>
 
@@ -62,6 +63,7 @@ void FSession::do_read()
             assert(bytes == this->data_buf.size());
             this->logger->debug("Thread: " + nu::thread_id_to_string(
                                                  std::this_thread::get_id()));
+            std::this_thread::sleep_for(std::chrono::seconds(2));
             if (!ec) {
                 this->nfprot = std::make_unique<Fproto>();
                 try {
