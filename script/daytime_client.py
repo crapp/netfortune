@@ -1,4 +1,4 @@
-# A simpel test script for netfortune server
+# Multiprocess test script to check netfortune server
 # Copyright © 2017 Christian Rapp
 
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Echo client program
 import socket
 import json
 
@@ -22,7 +21,6 @@ send_data = {}
 send_data['category'] = 'fun'
 send_data['bla'] = 'blub'
 send_j_data = json.dumps(send_data)
-print 
 HOST = '127.0.0.1'    # The remote host
 PORT = 13              # The same port as used by the server
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
