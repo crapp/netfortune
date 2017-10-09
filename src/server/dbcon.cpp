@@ -58,13 +58,17 @@ void DBCon::init_connection()
     boost::filesystem::path p(path);
     // this will throw an exception if it doesn't work
     boost::filesystem::create_directories(p);
+    // check if the sqlite lib is able to run in serialized mode
+    int mutex_mode = SQLITE_OPEN_FULLMUTEX;
+    if (sqlite3_threadsafe() == 0) {
+        mutex_mode = SQLITE_OPEN_NOMUTEX;
+    }
     // open databse in serial / mutex mode
     int rc = sqlite3_open_v2(
         std::string(p.string() + boost::filesystem::path::separator +
                     "netfortune.db")
             .c_str(),
-        &this->dbhandle,
-        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX,
+        &this->dbhandle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | mutex_mode,
         nullptr);
     if (rc != SQLITE_OK) {
         // throw error code and message

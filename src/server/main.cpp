@@ -36,6 +36,8 @@
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
 
+#include <sqlite3.h>
+
 #include "cpptoml/cpptoml.h"
 #include "spdlog/spdlog.h"
 
@@ -120,6 +122,14 @@ int main()
         if (nr_threads == 0) {
             logger->error("Zero threads do not make any sense");
             return 1;
+        }
+
+        int ts = sqlite3_threadsafe();
+        if (ts == 0) {
+            logger->warn(
+                "The installed SQlite Library does not support "
+                " multithreading. netfortune will only use one thread.");
+            nr_threads = 1;
         }
 
         logger->debug("Will spawn " + std::to_string(nr_threads) +
