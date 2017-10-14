@@ -137,13 +137,13 @@ int main()
 
         FServer server(io_service, std::move(cfg));
 
-        logger->info("Main thread id " + netfortune_utility::thread_id_to_string(
+        logger->info("Main thread id " + netfortune_utility::op_to_string(
                                              std::this_thread::get_id()));
         for (unsigned int i = 0; i < (nr_threads - 1); i++) {
             logger->debug("Creating thread number " + std::to_string(0));
             thread_pool.emplace_back([&io_service, &logger, i]() {
                 logger->info("Thread " + std::to_string(i) + " id: " +
-                             netfortune_utility::thread_id_to_string(
+                             netfortune_utility::op_to_string(
                                  std::this_thread::get_id()));
                 io_service.run();
             });

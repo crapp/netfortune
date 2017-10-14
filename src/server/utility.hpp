@@ -72,17 +72,19 @@ std::string toml_stringify(const FirsT &first, const T &... t)
     return first + std::string(".") + toml_stringify(t...);
 }
 
+
 /**
- * @brief Thread::id to string conversion
+ * @brief To string conversion using stringstream and << operator
  *
- * @param id std::tread::id
+ * @param t Object o convert, must implement << operator
  *
  * @return std::string
  */
-inline std::string thread_id_to_string(const std::thread::id &id)
+template <typename T>
+inline std::string op_to_string(const T &t)
 {
     std::stringstream ss;
-    ss << id;
+    ss << t;
     return ss.str();
 }
 }

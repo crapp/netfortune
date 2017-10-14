@@ -61,7 +61,7 @@ void FSession::do_read()
         this->strand.wrap([this, self](boost::system::error_code ec,
                                        size_t bytes ATTR_UNUSED) {
             assert(bytes == this->data_buf.size());
-            this->logger->debug("Thread: " + nu::thread_id_to_string(
+            this->logger->debug("Thread: " + nu::op_to_string(
                                                  std::this_thread::get_id()));
             std::this_thread::sleep_for(std::chrono::seconds(2));
             if (!ec) {
@@ -79,7 +79,7 @@ void FSession::do_read()
                                               size_t bytes ATTR_UNUSED) {
                             assert(bytes == this->data_buf.size());
                             this->logger->debug("Thread: " +
-                                                nu::thread_id_to_string(
+                                                nu::op_to_string(
                                                     std::this_thread::get_id()));
                             if (!ec) {
                                 try {
