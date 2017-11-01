@@ -61,8 +61,8 @@ void FSession::do_read()
         this->strand.wrap([this, self](boost::system::error_code ec,
                                        size_t bytes ATTR_UNUSED) {
             assert(bytes == this->data_buf.size());
-            this->logger->debug("Thread: " + nu::op_to_string(
-                                                 std::this_thread::get_id()));
+            this->logger->debug("Thread: " +
+                                nu::op_to_string(std::this_thread::get_id()));
             std::this_thread::sleep_for(std::chrono::seconds(2));
             if (!ec) {
                 this->nfprot = std::make_unique<Fproto>();
@@ -78,9 +78,9 @@ void FSession::do_read()
                                               boost::system::error_code ec,
                                               size_t bytes ATTR_UNUSED) {
                             assert(bytes == this->data_buf.size());
-                            this->logger->debug("Thread: " +
-                                                nu::op_to_string(
-                                                    std::this_thread::get_id()));
+                            this->logger->debug(
+                                "Thread: " +
+                                nu::op_to_string(std::this_thread::get_id()));
                             if (!ec) {
                                 try {
                                     this->nfprot->read_message(this->data_buf);
@@ -97,7 +97,8 @@ void FSession::do_read()
                     return;
                 }
             } else {
-                this->logger->debug("No data can be read in this session");
+                this->logger->warn("No data can be read in this session: " +
+                                   ec.message());
             }
         }));
 }

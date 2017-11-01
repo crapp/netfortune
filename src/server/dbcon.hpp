@@ -27,6 +27,7 @@
 #ifndef DBCON_HPP
 #define DBCON_HPP
 
+#include <map>
 #include <memory>
 
 #include <sqlite3.h>
@@ -34,6 +35,7 @@
 #include "cpptoml/cpptoml.h"
 #include "spdlog/spdlog.h"
 
+#include "config_netfortune.hpp"
 #include "configuration.hpp"
 
 /**
@@ -41,18 +43,23 @@
  */
 namespace dbcon_constants
 {
-const char* const TABLE_FORTUNE = "fortune";
-const char* const TABLE_FORTUNE_ID = "id";
-const char* const TABLE_FORTUNE_CATEGORY = "category";
-const char* const TABLE_FORTUNE_TEXT = "text";
-const char* const TABLE_FORTUNE_DATETIME = "datetime";
+const char *const TABLE_GENERAL = "general";
+const char *const COL_GENERAL = "version";
 
-const char* const TABLE_CATEGORY = "category";
-const char* const TABLE_CATEGORY_ID = "id";
-const char* const TABLE_CATEGORY_TEXT = "text";
-const char* const TABLE_CATEGORY_DATETIME = "datetime";
+using GENERAL_MAP = std::map<std::string, unsigned int>;
 
-const char* const TABLE_STAT = "statistic";
+const char *const TABLE_FORTUNE = "fortune";
+const char *const COL_FORTUNE_ID = "id";
+const char *const COL_FORTUNE_CATEGORY = "category"; /**< Foreign Key */
+const char *const COL_FORTUNE_TEXT = "text";
+const char *const COL_FORTUNE_DATETIME = "datetime";
+
+const char *const TABLE_CATEGORY = "category";
+const char *const COL_CATEGORY_ID = "id";
+const char *const COL_CATEGORY_TEXT = "text";
+const char *const COL_CATEGORY_DATETIME = "datetime";
+
+const char *const TABLE_STAT = "statistic";
 }
 
 /**
@@ -63,15 +70,22 @@ class DBCon
 public:
     DBCon(std::shared_ptr<cpptoml::table> cfg);
     virtual ~DBCon();
-    DBCon(const DBCon&) = delete; /**< no copy constructor **/
+    DBCon(const DBCon &) = delete; /**< no copy constructor **/
 
 private:
     std::shared_ptr<cpptoml::table> cfg;
     std::shared_ptr<spdlog::logger> logger;
 
-    sqlite3* dbhandle;
+    sqlite3 *dbhandle;
 
     void init_connection();
+    void init_database();
+
+    template <typename T>
+    void throw_runtime(const T &t)
+    {
+        throw std::runtime_error(t);
+    }
 };
 
 #endif /* DBCON_HPP */

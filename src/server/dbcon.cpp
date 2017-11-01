@@ -33,11 +33,13 @@
 
 namespace nc = netfortune_configuration;
 namespace nu = netfortune_utility;
+namespace dc = dbcon_constants;
 
 DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(std::move(cfg))
 {
     this->logger = spdlog::get("multi_logger");
     this->init_connection();
+    this->init_database();
 }
 
 DBCon::~DBCon()
@@ -50,6 +52,7 @@ DBCon::~DBCon()
 
 void DBCon::init_connection()
 {
+    this->logger->info("Initializing connection");
     // check if path exists
     std::string path = this->cfg
                            ->get_qualified_as<std::string>(nu::toml_stringify(
@@ -63,7 +66,7 @@ void DBCon::init_connection()
     if (sqlite3_threadsafe() == 0) {
         mutex_mode = SQLITE_OPEN_NOMUTEX;
     }
-    // open databse in serial / mutex mode
+    // open database in serial / mutex mode if possible
     int rc = sqlite3_open_v2(
         std::string(p.string() + boost::filesystem::path::separator +
                     "netfortune.db")
@@ -76,4 +79,76 @@ void DBCon::init_connection()
             "Could not open DB. Error: " + std::string(sqlite3_errstr(rc)) +
             "\n" + std::string(sqlite3_errmsg(this->dbhandle)));
     }
+}
+
+void DBCon::init_database()
+{
+    this->logger->info("Initializing database");
+
+    char *errMsg = nullptr; // make sure to free this one with sqlite3_free()
+    auto err_handler = [this, errMsg](const auto &msg) {
+        this->logger->error(errMsg);
+        sqlite3_free(errMsg);
+        this->throw_runtime("Error querrying database");
+    };
+
+    using gen_exists_arg = std::tuple<bool, dc::GENERAL_MAP>;
+    gen_exists_arg gen_result;
+    std::get<0>(gen_result) = false;
+    std::string check_gen_exists("SELECT * "
+                                 "  FROM table_master"
+                                 " WHERE type='table'"
+                                 "   AND name='" +
+                                 std::string(dc::TABLE_GENERAL) + "';");
+
+    int rc =
+        sqlite3_exec(this->dbhandle, check_gen_exists.c_str(),
+                     [](void *gen_result, int count, char **data ATTR_UNUSED,
+                        char **columns ATTR_UNUSED) -> int {
+                         if (count != 0) {
+                             auto *local_gen_result =
+                                 static_cast<gen_exists_arg *>(gen_result);
+                             std::get<0>(*local_gen_result) = true;
+                         }
+                         return 0;
+                     },
+                     &gen_result, &errMsg);
+    if (rc != 0) {
+        err_handler(errMsg);
+    }
+
+    bool needs_update = false;
+
+    if (std::get<0>(gen_result)) {
+        std::string check_db_version("SELECT " + std::string(dc::COL_GENERAL) +
+                                     "  FROM " + dc::TABLE_GENERAL + ";");
+        rc = sqlite3_exec(this->dbhandle, check_db_version.c_str(),
+                          [](void *gen_result, int count, char **data,
+                             char **column_names) -> int {
+                              auto *local_gen_result =
+                                  static_cast<gen_exists_arg *>(gen_result);
+                              for (int i = 0; i < count; i++) {
+                                  std::get<1>(*local_gen_result)
+                                      .insert(std::make_pair(
+                                          column_names[i], std::stoi(data[i])));
+                              }
+                              return 0;
+                          },
+                          &gen_result, &errMsg);
+        if (rc != 0) {
+            err_handler(errMsg);
+        }
+        if (std::get<1>(gen_result).at(dc::COL_GENERAL) !=
+            NETFORTUNE_DATABASE_VERSION) {
+            needs_update = true;
+        }
+    }
+
+    std::string sql_create_category("CREATE TABLE if not exists " +
+                                    std::string(dc::TABLE_CATEGORY) +
+                                    "("
+                                    "id INTEGER PRIMARY KEY,"
+                                    "category TEXT UNIQUE,"
+                                    ")");
+    // rc = sqlite3_exec(this->dbhandle, )
 }
