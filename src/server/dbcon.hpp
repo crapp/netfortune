@@ -30,10 +30,9 @@
 #include <map>
 #include <memory>
 
-#include <sqlite3.h>
-
 #include "cpptoml/cpptoml.h"
 #include "spdlog/spdlog.h"
+#include "sqlite_modern_cpp.h"
 
 #include "config_netfortune.hpp"
 #include "configuration.hpp"
@@ -43,23 +42,29 @@
  */
 namespace dbcon_constants
 {
-const char *const TABLE_GENERAL = "general";
-const char *const COL_GENERAL = "version";
+// clang-format off
+const char *const TABLE_GENERAL         = "general";
+const char *const COL_GENERAL           = "schemaversion";
 
-using GENERAL_MAP = std::map<std::string, unsigned int>;
+const char *const TABLE_FORTUNE         = "fortune";
+const char *const COL_FORTUNE_ID        = "id";
+const char *const COL_FORTUNE_CATID     = "catid"; /**< Foreign Key */
+const char *const COL_FORTUNE_TEXT      = "fortune";
+const char *const COL_FORTUNE_DATETIME  = "dt";
 
-const char *const TABLE_FORTUNE = "fortune";
-const char *const COL_FORTUNE_ID = "id";
-const char *const COL_FORTUNE_CATEGORY = "category"; /**< Foreign Key */
-const char *const COL_FORTUNE_TEXT = "text";
-const char *const COL_FORTUNE_DATETIME = "datetime";
+const char *const TABLE_CATEGORY        = "category";
+const char *const COL_CATEGORY_ID       = "id";
+const char *const COL_CATEGORY_TEXT     = "cat";
+const char *const COL_CATEGORY_DATETIME = "dt";
 
-const char *const TABLE_CATEGORY = "category";
-const char *const COL_CATEGORY_ID = "id";
-const char *const COL_CATEGORY_TEXT = "text";
-const char *const COL_CATEGORY_DATETIME = "datetime";
-
-const char *const TABLE_STAT = "statistic";
+const char *const TABLE_STAT            = "statistic";
+const char *const COL_STAT_ID           = "id";
+const char *const COL_STAT_FORTUNEID    = "fortuneid";
+const char *const COL_STAT_CATID        = "catid";
+const char *const COL_STAT_NUM          = "number";
+const char *const COL_STAT_DTUPDATE     = "dtupdate";
+const char *const COL_STAT_DTCREATE     = "dtcreate";
+// clang-format on
 }
 
 /**
@@ -68,7 +73,7 @@ const char *const TABLE_STAT = "statistic";
 class DBCon
 {
 public:
-    DBCon(std::shared_ptr<cpptoml::table> cfg);
+    explicit DBCon(std::shared_ptr<cpptoml::table> cfg);
     virtual ~DBCon();
     DBCon(const DBCon &) = delete; /**< no copy constructor **/
 
@@ -76,7 +81,7 @@ private:
     std::shared_ptr<cpptoml::table> cfg;
     std::shared_ptr<spdlog::logger> logger;
 
-    sqlite3 *dbhandle;
+    std::unique_ptr<sqlite::database> db;
 
     void init_connection();
     void init_database();

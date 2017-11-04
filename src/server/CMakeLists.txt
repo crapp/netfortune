@@ -44,7 +44,7 @@ target_include_directories(netfortune-server
     PUBLIC ${SQLITE_HEADER}
     PUBLIC "${CMAKE_SOURCE_DIR}/external"
     PUBLIC "${CMAKE_SOURCE_DIR}/external/json"
-    PUBLIC "${CMAKE_SOURCE_DIR}/external/sqlite_modern_cpp"
+    PUBLIC "${CMAKE_SOURCE_DIR}/external/sqlite_modern_cpp/hdr"
     PUBLIC "${CMAKE_SOURCE_DIR}/src/fproto"
     )
 

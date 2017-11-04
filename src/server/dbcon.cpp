@@ -42,13 +42,7 @@ DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(std::move(cfg))
     this->init_database();
 }
 
-DBCon::~DBCon()
-{
-    this->logger->debug("Closing sqlite dbhandle");
-    if (this->dbhandle != nullptr) {
-        sqlite3_close(dbhandle);
-    }
-}
+DBCon::~DBCon() { this->logger->debug("Closing sqlite dbhandle"); }
 
 void DBCon::init_connection()
 {
@@ -62,22 +56,27 @@ void DBCon::init_connection()
     // this will throw an exception if it doesn't work
     boost::filesystem::create_directories(p);
     // check if the sqlite lib is able to run in serialized mode
-    int mutex_mode = SQLITE_OPEN_FULLMUTEX;
+    sqlite::OpenFlags mutexflag = sqlite::OpenFlags::FULLMUTEX;
     if (sqlite3_threadsafe() == 0) {
-        mutex_mode = SQLITE_OPEN_NOMUTEX;
+        mutexflag = sqlite::OpenFlags::NOMUTEX;
     }
-    // open database in serial / mutex mode if possible
-    int rc = sqlite3_open_v2(
-        std::string(p.string() + boost::filesystem::path::separator +
-                    "netfortune.db")
-            .c_str(),
-        &this->dbhandle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | mutex_mode,
-        nullptr);
-    if (rc != SQLITE_OK) {
+
+    sqlite::sqlite_config sqlconf;
+
+    sqlconf.flags =
+        sqlite::OpenFlags::READWRITE | sqlite::OpenFlags::CREATE | mutexflag;
+
+    try {
+        // open database in serial / mutex mode if possible
+        this->db = std::make_unique<sqlite::database>(
+            p.string() + boost::filesystem::path::separator + "netfortune.db",
+            sqlconf);
+        *this->db << "PRAGMA foreign_keys = ON";
+    } catch (const sqlite::sqlite_exception &ex) {
         // throw error code and message
-        throw std::runtime_error(
-            "Could not open DB. Error: " + std::string(sqlite3_errstr(rc)) +
-            "\n" + std::string(sqlite3_errmsg(this->dbhandle)));
+        throw std::runtime_error(std::string("Could not open DB. Error: ") +
+                                 ex.what() + "\n" +
+                                 std::to_string(ex.get_code()));
     }
 }
 
@@ -85,70 +84,93 @@ void DBCon::init_database()
 {
     this->logger->info("Initializing database");
 
-    char *errMsg = nullptr; // make sure to free this one with sqlite3_free()
-    auto err_handler = [this, errMsg](const auto &msg) {
-        this->logger->error(errMsg);
-        sqlite3_free(errMsg);
-        this->throw_runtime("Error querrying database");
-    };
-
-    using gen_exists_arg = std::tuple<bool, dc::GENERAL_MAP>;
-    gen_exists_arg gen_result;
-    std::get<0>(gen_result) = false;
-    std::string check_gen_exists("SELECT * "
-                                 "  FROM table_master"
-                                 " WHERE type='table'"
-                                 "   AND name='" +
-                                 std::string(dc::TABLE_GENERAL) + "';");
-
-    int rc =
-        sqlite3_exec(this->dbhandle, check_gen_exists.c_str(),
-                     [](void *gen_result, int count, char **data ATTR_UNUSED,
-                        char **columns ATTR_UNUSED) -> int {
-                         if (count != 0) {
-                             auto *local_gen_result =
-                                 static_cast<gen_exists_arg *>(gen_result);
-                             std::get<0>(*local_gen_result) = true;
-                         }
-                         return 0;
-                     },
-                     &gen_result, &errMsg);
-    if (rc != 0) {
-        err_handler(errMsg);
-    }
-
-    bool needs_update = false;
-
-    if (std::get<0>(gen_result)) {
-        std::string check_db_version("SELECT " + std::string(dc::COL_GENERAL) +
-                                     "  FROM " + dc::TABLE_GENERAL + ";");
-        rc = sqlite3_exec(this->dbhandle, check_db_version.c_str(),
-                          [](void *gen_result, int count, char **data,
-                             char **column_names) -> int {
-                              auto *local_gen_result =
-                                  static_cast<gen_exists_arg *>(gen_result);
-                              for (int i = 0; i < count; i++) {
-                                  std::get<1>(*local_gen_result)
-                                      .insert(std::make_pair(
-                                          column_names[i], std::stoi(data[i])));
-                              }
-                              return 0;
-                          },
-                          &gen_result, &errMsg);
-        if (rc != 0) {
-            err_handler(errMsg);
+    try {
+        // clang-format off
+        auto check_gen_exists(nu::stringify(
+                    "SELECT * "
+                    "  FROM sqlite_master"
+                    " WHERE type='table'"
+                    "   AND name='", dc::TABLE_GENERAL, "';"));
+        // clang-format on
+        bool netfortune_db_exists = false;
+        bool needs_update = false;
+        *this->db << check_gen_exists >> [&]() { netfortune_db_exists = true; };
+        if (netfortune_db_exists) {
+            // clang-format off
+            auto check_db_version(
+                    nu::stringify(
+                        "SELECT ", dc::COL_GENERAL,
+                        "  FROM ", dc::TABLE_GENERAL, ";"));
+            // clang-format on
+            *this->db << check_db_version >> [&](int version) {
+                if (version != NETFORTUNE_DATABASE_VERSION)
+                    needs_update = true;
+            };
         }
-        if (std::get<1>(gen_result).at(dc::COL_GENERAL) !=
-            NETFORTUNE_DATABASE_VERSION) {
-            needs_update = true;
+        if (needs_update) {
+            // check force switch as updates are destructive
+            // automatically backup old database?
+        } else if (netfortune_db_exists) {
+            return;
         }
-    }
 
-    std::string sql_create_category("CREATE TABLE if not exists " +
-                                    std::string(dc::TABLE_CATEGORY) +
-                                    "("
-                                    "id INTEGER PRIMARY KEY,"
-                                    "category TEXT UNIQUE,"
-                                    ")");
-    // rc = sqlite3_exec(this->dbhandle, )
+        // create general table with db version info
+        // clang-format off
+        auto crtgen(nu::stringify(
+                    "CREATE TABLE ", dc::TABLE_GENERAL, "(",
+                    dc::COL_GENERAL, " INTEGER NOT NULL);"
+                    ));
+        *this->db << crtgen;
+        auto insgen(nu::stringify(
+                    "INSERT into ", dc::TABLE_GENERAL, "(",
+                    dc::COL_GENERAL, ")", "VALUES (?)"));
+        *this->db << insgen << NETFORTUNE_DATABASE_VERSION;
+        // clang-format on
+
+        // create category table
+        // clang-format off
+        auto gencat(nu::stringify(
+            "CREATE TABLE ", dc::TABLE_CATEGORY, "(",
+            dc::COL_CATEGORY_ID,       " INTEGER PRIMARY KEY autoincrement NOT NULL, ",
+            dc::COL_CATEGORY_TEXT,     " TEXT NOT NULL, ",
+            dc::COL_CATEGORY_DATETIME, " TEXT NOT NULL);"));
+        // clang-format on
+        *this->db << gencat;
+
+        // create fortunes table
+        // clang-format off
+        auto genfor(nu::stringify(
+            "CREATE TABLE ", dc::TABLE_FORTUNE, "(",
+            dc::COL_FORTUNE_ID,       " INTEGER PRIMARY KEY autoincrement NOT NULL, ",
+            dc::COL_FORTUNE_TEXT,     " TEXT NOT NULL, ",
+            dc::COL_FORTUNE_CATID,    " INTEGER NOT NULL, ",
+            dc::COL_FORTUNE_DATETIME, " TEXT NOT NULL DEFAULT (datetime('now', 'localtime')), ",
+            "FOREIGN KEY (", dc::COL_FORTUNE_CATID, ") REFERENCES ", dc::TABLE_CATEGORY, " (", dc::COL_CATEGORY_ID, ") ON DELETE CASCADE);"));
+        // clang-format on
+        *this->db << genfor;
+
+        // create statistics table and an update trigger
+        // clang-format off
+        auto genstat(nu::stringify(
+            "CREATE TABLE ", dc::TABLE_STAT, "(",
+            dc::COL_STAT_ID,        " INTEGER PRIMARY KEY autoincrement NOT NULL, ",
+            dc::COL_STAT_FORTUNEID, " INTEGER NOT NULL, ",
+            dc::COL_STAT_CATID,     " INTEGER NOT NULL, ",
+            dc::COL_STAT_NUM,       " INTEGER NOT NULL DEFAULT 1, ",
+            dc::COL_STAT_DTUPDATE,  " TEXT NOT NULL DEFAULT (datetime('now', 'localtime')), ",
+            dc::COL_STAT_DTCREATE,  " TEXT NOT NULL DEFAULT (datetime('now', 'localtime')), ",
+            "FOREIGN KEY (", dc::COL_STAT_CATID, ") REFERENCES ", dc::TABLE_CATEGORY, " (", dc::COL_CATEGORY_ID, ") ON DELETE CASCADE, ",
+            "FOREIGN KEY (", dc::COL_STAT_FORTUNEID, ") REFERENCES ", dc::TABLE_FORTUNE, " (", dc::COL_FORTUNE_ID, ") ON DELETE CASCADE);"));
+        auto trigstat(nu::stringify(
+            "CREATE TRIGGER update_stat_dtup AFTER UPDATE OF ", dc::COL_STAT_NUM, " ON ", dc::TABLE_STAT,
+            " BEGIN ",
+            "UPDATE ", dc::TABLE_STAT, " SET ", dc::COL_STAT_DTUPDATE, " = (datetime('now', 'localtime')) where ", dc::COL_STAT_ID, " = OLD.", dc::COL_STAT_ID, "; "
+            " END;"));
+        // clang-format on
+        *this->db << genstat;
+        *this->db << trigstat;
+    } catch (const sqlite::sqlite_exception &ex) {
+        this->throw_runtime(
+            nu::stringify(ex.what(), "\n", ex.get_code(), "\n", ex.get_sql()));
+    }
 }

@@ -72,7 +72,6 @@ std::string toml_stringify(const FirsT &first, const T &... t)
     return first + std::string(".") + toml_stringify(t...);
 }
 
-
 /**
  * @brief To string conversion using stringstream and << operator
  *
@@ -85,6 +84,23 @@ inline std::string op_to_string(const T &t)
 {
     std::stringstream ss;
     ss << t;
+    return ss.str();
+}
+
+/**
+ * @brief Concatenate elements to one string using a stringstream
+ *
+ * @tparam Args Pass your arguments here
+ * @param args
+ *
+ * @return The concatenated string
+ */
+template <typename... Args>
+std::string stringify(const Args &... args)
+{
+    std::stringstream ss;
+    [[maybe_unused]] int a[] = {0, ((void)(ss << args), 0)...};
+
     return ss.str();
 }
 }
