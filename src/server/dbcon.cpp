@@ -69,7 +69,7 @@ void DBCon::init_connection()
     try {
         // open database in serial / mutex mode if possible
         this->db = std::make_unique<sqlite::database>(
-            p.string() + boost::filesystem::path::separator + "netfortune.db",
+            p.string() + boost::filesystem::path::preferred_separator + "netfortune.db",
             sqlconf);
         *this->db << "PRAGMA foreign_keys = ON";
     } catch (const sqlite::sqlite_exception &ex) {
