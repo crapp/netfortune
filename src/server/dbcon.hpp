@@ -84,7 +84,12 @@ private:
     std::unique_ptr<sqlite::database> db;
 
     void init_connection();
-    void init_database();
+    /**
+     * @brief Init database
+     *
+     * @return true if database was initialized, false if database is okay
+     */
+    bool init_database();
 
     template <typename T>
     void throw_runtime(const T &t)

@@ -39,7 +39,10 @@ DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(std::move(cfg))
 {
     this->logger = spdlog::get("multi_logger");
     this->init_connection();
-    this->init_database();
+    if (this->init_database())
+    {
+        // parse fortune files and insert all cookies into the database
+    }
 }
 
 DBCon::~DBCon() { this->logger->debug("Closing sqlite dbhandle"); }
@@ -80,7 +83,7 @@ void DBCon::init_connection()
     }
 }
 
-void DBCon::init_database()
+bool DBCon::init_database()
 {
     this->logger->info("Initializing database");
 
@@ -111,7 +114,7 @@ void DBCon::init_database()
             // check force switch as updates are destructive
             // automatically backup old database?
         } else if (netfortune_db_exists) {
-            return;
+            return false;
         }
 
         // create general table with db version info
@@ -173,4 +176,5 @@ void DBCon::init_database()
         this->throw_runtime(
             nu::stringify(ex.what(), "\n", ex.get_code(), "\n", ex.get_sql()));
     }
+    return true;
 }

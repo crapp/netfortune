@@ -34,6 +34,13 @@
 #include "config_netfortune.hpp"
 #include "json.hpp"
 
+/**
+ * @brief Implementation of the tcp data exchange protocoll
+ *
+ * @detail
+ * This class translates tcp requests to json or fortune cookies to json and then
+ * to tcp
+ */
 class Fproto
 {
 public:
