@@ -35,20 +35,19 @@ namespace bas = boost::asio;
 namespace nu = netfortune_utility;
 
 FSession::FSession(bas::ip::tcp::socket socket)
-    : socket(std::move(socket)), strand(socket.get_io_service()), nfprot(nullptr)
-{
+    : socket(std::move(socket)),
+      strand(socket.get_io_service()),
+      nfprot(nullptr) {
     this->logger = spdlog::get("multi_logger");
     this->logger->debug("FSession created");
 }
 
-void FSession::start()
-{
+void FSession::start() {
     this->logger->debug("Session started");
     this->do_read();
 }
 
-void FSession::do_read()
-{
+void FSession::do_read() {
     // https://stackoverflow.com/a/22291720
     // https://stackoverflow.com/a/25687309/1127601
     this->data_buf.clear();
@@ -56,21 +55,24 @@ void FSession::do_read()
     auto self = shared_from_this();
     this->logger->debug("FSession::do_read");
     // TODO: Simplify this code. Don't like these nested calls
+
+    // First asnyc read to get fproto details
     bas::async_read(
         this->socket, bas::buffer(this->data_buf, this->data_buf.size()),
         this->strand.wrap([this, self](boost::system::error_code ec,
                                        size_t bytes ATTR_UNUSED) {
             assert(bytes == this->data_buf.size());
-            this->logger->debug("Thread: " +
-                                nu::op_to_string(std::this_thread::get_id()));
-            std::this_thread::sleep_for(std::chrono::seconds(2));
             if (!ec) {
+                // initalize a fproto object
                 this->nfprot = std::make_unique<Fproto>();
                 try {
+                    // parse the haeder
                     this->nfprot->init_header(
                         {{this->data_buf.at(0), this->data_buf.at(1)}});
                     this->data_buf.clear();
+                    // resize data_bif with length that was stored in the header
                     this->data_buf.resize(this->nfprot->get_message_length());
+                    // perform the next read operation to get the actual data
                     bas::async_read(
                         this->socket,
                         bas::buffer(this->data_buf, this->data_buf.size()),
@@ -78,11 +80,10 @@ void FSession::do_read()
                                               boost::system::error_code ec,
                                               size_t bytes ATTR_UNUSED) {
                             assert(bytes == this->data_buf.size());
-                            this->logger->debug(
-                                "Thread: " +
-                                nu::op_to_string(std::this_thread::get_id()));
                             if (!ec) {
                                 try {
+                                    // read the actual message and parse it as
+                                    // json
                                     this->nfprot->read_message(this->data_buf);
                                 } catch (const std::runtime_error &err) {
                                     this->logger->error(err.what());
