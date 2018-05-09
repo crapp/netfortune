@@ -47,7 +47,7 @@ public:
 private:
     boost::asio::ip::tcp::acceptor acceptor;
     boost::asio::ip::tcp::socket socket;
-    boost::asio::strand strand;
+    boost::asio::io_context::strand strand;
 
     std::shared_ptr<spdlog::logger> logger;
     std::shared_ptr<cpptoml::table> cfg;

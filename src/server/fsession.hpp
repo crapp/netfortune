@@ -63,7 +63,8 @@ private:
         data_buf; /**< buffer containing the request and later the answer */
     const size_t max_buf_size = 2048;    /**< maximum data buffer size */
     boost::asio::ip::tcp::socket socket; /**< Socket this session uses */
-    boost::asio::strand strand;          /**< synchronize asio calls */
+    boost::asio::io_context::strand strand;
+    /**< synchronize asio calls */
 
     std::shared_ptr<spdlog::logger> logger;
     std::unique_ptr<Fproto> nfprot;
