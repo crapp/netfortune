@@ -85,6 +85,7 @@ private:
 
     void init_connection();
     void init_database();
+    void init_fortunes();
 
     template <typename T>
     void throw_runtime(const T &t)

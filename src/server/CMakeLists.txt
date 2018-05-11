@@ -1,6 +1,3 @@
-# include this module to check for needed sqlite3 symbols
-include(CheckSymbolExists)
-
 set(${PROJECT_NAME}_SERVER_HEADER
     ${CMAKE_CURRENT_SOURCE_DIR}/configuration.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dbcon.hpp
@@ -14,7 +11,7 @@ set(${PROJECT_NAME}_SERVER_SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     )
 
-#find sqlite3 header and library
+# find sqlite3 header and library. search in typical macports directory first
 find_path(
     SQLITE_HEADER
     sqlite3.h
@@ -35,8 +32,8 @@ find_library(
     SQLITE_LIB
     sqlite3
 )
-message(STATUS "SQLITE3_HEADER: [${SQLITE_HEADER}]")
-message(STATUS "SQLITE3_LIB: [${SQLITE_LIB}]")
+# message(STATUS "SQLITE3_HEADER: [${SQLITE_HEADER}]")
+# message(STATUS "SQLITE3_LIB: [${SQLITE_LIB}]")
 
 if(NOT SQLITE_HEADER)
     message(SEND_ERROR "Failed to locate sqlite3 header")

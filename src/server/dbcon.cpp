@@ -28,6 +28,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include <sstream>
+
 #include "configuration.hpp"
 #include "utility.hpp"
 
@@ -69,7 +71,8 @@ void DBCon::init_connection()
     try {
         // open database in serial / mutex mode if possible
         this->db = std::make_unique<sqlite::database>(
-            p.string() + boost::filesystem::path::preferred_separator + "netfortune.db",
+            p.string() + boost::filesystem::path::preferred_separator +
+                "netfortune.db",
             sqlconf);
         *this->db << "PRAGMA foreign_keys = ON";
     } catch (const sqlite::sqlite_exception &ex) {
@@ -110,6 +113,18 @@ void DBCon::init_database()
         if (needs_update) {
             // check force switch as updates are destructive
             // automatically backup old database?
+            std::vector<std::string> drops;
+            // copy elision should happen for temp objects
+            drops.push_back(
+                nu::stringify("DROP TABLE ", dc::TABLE_GENERAL, ";"));
+            drops.push_back(
+                nu::stringify("DROP TABLE ", dc::TABLE_CATEGORY, ";"));
+            drops.push_back(
+                nu::stringify("DROP TABLE ", dc::TABLE_FORTUNE, ";"));
+            drops.push_back(nu::stringify("DROP TABLE ", dc::TABLE_STAT, ";"));
+            for (auto &&s : drops) {
+                *this->db << s;
+            }
         } else if (netfortune_db_exists) {
             return;
         }
@@ -172,5 +187,55 @@ void DBCon::init_database()
     } catch (const sqlite::sqlite_exception &ex) {
         this->throw_runtime(
             nu::stringify(ex.what(), "\n", ex.get_code(), "\n", ex.get_sql()));
+    }
+}
+
+void DBCon::init_fortunes()
+{
+    namespace fs = boost::filesystem;
+    this->logger->info("Starting to parse fortunes files");
+    std::string path = this->cfg
+                           ->get_qualified_as<std::string>(nu::toml_stringify(
+                               nc::FORTUNES, nc::FORTUNES_BASE_FOLDER))
+                           .value_or(nc::FORTUNES_BASE_FOlDER_DEFAULT);
+    auto arr = this->cfg
+                   ->get_qualified_array_of<std::string>(
+                       nu::toml_stringify(nc::FORTUNES, nc::FORTUNES_BLACKLIST))
+                   .value_or(nc::FORTUNES_BLACKLIST_DEFAULT);
+    fs::path p(path);
+    if (!fs::exists(p) || !fs::is_directory(p)) {
+        throw std::runtime_error("Fortunes directory does not exist or provided "
+                                 "path is no directory");
+    }
+    fs::recursive_directory_iterator it(path);
+
+    bool file_start = true;
+    for (auto &&elem : it) {
+        auto itarr =
+            std::find(arr.begin(), arr.end(), elem.path().stem().string());
+        if (itarr != arr.end()) {
+            this->logger->warn(elem.path().stem().string() + " is blacklisted");
+            continue;
+        }
+        if (fs::is_regular_file(elem) && fs::extension(elem) != "dat") {
+            fs::fstream file(elem);
+            if (file.is_open()) {
+                std::string line;
+                std::stringstream fortune;
+                while (std::getline(file, line)) {
+                    if (line.front() == '%') {
+                        // fortune is complete
+                        if (file_start) {
+                            file_start = false;
+                            continue;
+                        }
+                    } else {
+                        fortune << line << "\\n";
+                    }
+                }
+            } else {
+                this->logger->error("Can not open file " + elem.path().string());
+            }
+        }
     }
 }
