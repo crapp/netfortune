@@ -79,8 +79,9 @@ int main()
     }
     // TODO: Add multiple sinks to our logger
     // std::vector<spdlog::sink_ptr> sinks;
-    //sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_st>());
-    //sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_st>("logfile", "txt", 23, 59));
+    // sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_st>());
+    // sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_st>("logfile",
+    // "txt", 23, 59));
     // auto combined_logger = std::make_shared<spdlog::logger>("name",
     // begin(sinks), end(sinks));
     ////register it if you need to access it globally
@@ -168,20 +169,20 @@ int main()
 
     // for (;;) {
     // tcp::socket socket(io_service);
-    //acceptor.accept(socket);
+    // acceptor.accept(socket);
 
     // std::string message = make_daytime_string();
-    //message.erase(std::remove(message.begin(), message.end(), '\n'),
-    //message.end());
+    // message.erase(std::remove(message.begin(), message.end(), '\n'),
+    // message.end());
     // nlohmann::json j;
     // j["daytime"] = message;
 
     // boost::system::error_code ignored_error;
-    //boost::asio::write(socket, boost::asio::buffer(j.dump(2)),
+    // boost::asio::write(socket, boost::asio::buffer(j.dump(2)),
     // ignored_error);
     //}
     //} catch (std::exception& e) {
-    //std::cerr << e.what() << std::endl;
+    // std::cerr << e.what() << std::endl;
     //}
 
     return 0;
