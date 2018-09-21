@@ -48,6 +48,7 @@ const char *const COL_GENERAL           = "schemaversion";
 
 const char *const TABLE_FORTUNE         = "fortune";
 const char *const COL_FORTUNE_ID        = "id";
+const char *const COL_FORTUNE_HASH      = "hash";
 const char *const COL_FORTUNE_CATID     = "catid"; /**< Foreign Key */
 const char *const COL_FORTUNE_TEXT      = "fortune";
 const char *const COL_FORTUNE_DATETIME  = "dt";

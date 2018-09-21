@@ -157,6 +157,7 @@ void DBCon::init_database()
         auto genfor(nu::stringify(
             "CREATE TABLE ", dc::TABLE_FORTUNE, "(",
             dc::COL_FORTUNE_ID,       " INTEGER PRIMARY KEY autoincrement NOT NULL, ",
+            dc::COL_FORTUNE_HASH,     " INTEGER UNIQUE NOT NULL, ",
             dc::COL_FORTUNE_TEXT,     " TEXT NOT NULL, ",
             dc::COL_FORTUNE_CATID,    " INTEGER NOT NULL, ",
             dc::COL_FORTUNE_DATETIME, " TEXT NOT NULL DEFAULT (datetime('now', 'localtime')), ",
