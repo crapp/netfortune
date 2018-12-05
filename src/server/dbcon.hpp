@@ -40,8 +40,7 @@
 /**
  * @brief DB related constants. Mostly table and column names
  */
-namespace dbcon_constants
-{
+namespace dbcon_constants {
 // clang-format off
 const char *const TABLE_GENERAL         = "general";
 const char *const COL_GENERAL           = "schemaversion";
@@ -66,31 +65,39 @@ const char *const COL_STAT_NUM          = "number";
 const char *const COL_STAT_DTUPDATE     = "dtupdate";
 const char *const COL_STAT_DTCREATE     = "dtcreate";
 // clang-format on
-}
+}  // namespace dbcon_constants
 
 /**
  * @brief Connection to sqlite database
  */
-class DBCon
-{
-public:
+class DBCon {
+   public:
     explicit DBCon(std::shared_ptr<cpptoml::table> cfg);
     virtual ~DBCon();
     DBCon(const DBCon &) = delete; /**< no copy constructor **/
 
-private:
+   private:
     std::shared_ptr<cpptoml::table> cfg;
     std::shared_ptr<spdlog::logger> logger;
 
     std::unique_ptr<sqlite::database> db;
 
     void init_connection();
-    void init_database();
-    void init_fortunes();
+    /**
+     * @brief Init database
+     *
+     * @return true if database was initialized, false if database is okay
+     */
+    bool init_database();
+    /**
+     * @brief Parse fortune files and insert data into the database
+     *
+     * @return True if insert did succeed
+     */
+    bool parse_fortunes();
 
     template <typename T>
-    void throw_runtime(const T &t)
-    {
+    void throw_runtime(const T &t) {
         throw std::runtime_error(t);
     }
 };

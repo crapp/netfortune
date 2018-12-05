@@ -1,4 +1,4 @@
-// netfortune brings fortunes for everyone, everywhere
+// Netfortune brings fortunes to everyone everywhere
 // Copyright © 2017 Christian Rapp
 // All rights reserved.
 
@@ -13,10 +13,10 @@
 // names of its contributors may be used to endorse or promote products
 // derived from this software without specific prior written permission.
 
-// THIS SOFTWARE IS PROVIDED BY  ''AS IS'' AND ANY
+// THIS SOFTWARE IS PROVIDED BY Christian Rapp ''AS IS'' AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 // WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-// DISCLAIMED. IN NO EVENT SHALL  BE LIABLE FOR ANY
+// DISCLAIMED. IN NO EVENT SHALL Christian Rapp  BE LIABLE FOR ANY
 // DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 // (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 // LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -24,49 +24,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef FPROTO_HPP
-#define FPROTO_HPP
+#include "fcookie.hpp"
 
-#include <stdexcept>
-
-#include "spdlog/spdlog.h"
-
-#include "config_netfortune.hpp"
-#include "json.hpp"
-
-/**
- * @brief Implementation of the tcp data exchange protocoll
- *
- * @detail
- * This class translates tcp requests to json or fortune cookies to json and then
- * to tcp
- */
-class Fproto
-{
-public:
-    Fproto();
-    virtual ~Fproto() = default;
-    Fproto(const Fproto&) = delete;
-    Fproto(Fproto&&) = default;
-    Fproto& operator=(const Fproto&) = delete;
-
-    /**
-     * @brief Parse header bytes to get message length
-     *
-     * @param header_bytes The first two bytes copied from the session buffer
-     */
-    void init_header(std::array<unsigned char, FPROTO_HEADER_SIZE> header_bytes);
-
-    void read_message(const std::vector<unsigned char>& message_bytes);
-
-    unsigned short get_message_length() const;
-
-private:
-    unsigned short message_length;
-
-    nlohmann::json request;
-
-    std::shared_ptr<spdlog::logger> logger;
-};
-
-#endif /* FPROTO_HPP */
+FCookie::FCookie(std::string text, std::string category)
+    : text(std::move(text)), category(std::move(category)) {}

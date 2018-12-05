@@ -46,8 +46,7 @@
 #include "fserver.hpp"
 #include "utility.hpp"
 
-int main()
-{
+int main() {
     std::shared_ptr<cpptoml::table> cfg = nullptr;
     std::string cfg_file = "netfortune-server.toml";
     if (!boost::filesystem::exists(cfg_file)) {

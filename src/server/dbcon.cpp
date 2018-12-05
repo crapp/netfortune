@@ -26,6 +26,8 @@
 
 #include "dbcon.hpp"
 
+#include <fstream>
+
 #include <boost/filesystem.hpp>
 
 #include <sstream>
@@ -36,18 +38,19 @@
 namespace nc = netfortune_configuration;
 namespace nu = netfortune_utility;
 namespace dc = dbcon_constants;
+namespace bfs = boost::filesystem;
 
-DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(std::move(cfg))
-{
+DBCon::DBCon(std::shared_ptr<cpptoml::table> cfg) : cfg(std::move(cfg)) {
     this->logger = spdlog::get("multi_logger");
     this->init_connection();
-    this->init_database();
+    if (this->init_database()) {
+        // parse fortune files and insert all cookies into the database
+    }
 }
 
 DBCon::~DBCon() { this->logger->debug("Closing sqlite dbhandle"); }
 
-void DBCon::init_connection()
-{
+void DBCon::init_connection() {
     this->logger->info("Initializing connection");
     // check if path exists
     std::string path = this->cfg
@@ -83,8 +86,7 @@ void DBCon::init_connection()
     }
 }
 
-void DBCon::init_database()
-{
+bool DBCon::init_database() {
     this->logger->info("Initializing database");
 
     try {
@@ -106,8 +108,9 @@ void DBCon::init_database()
                         "  FROM ", dc::TABLE_GENERAL, ";"));
             // clang-format on
             *this->db << check_db_version >> [&](int version) {
-                if (version != NETFORTUNE_DATABASE_VERSION)
+                if (version != NETFORTUNE_DATABASE_VERSION) {
                     needs_update = true;
+                }
             };
         }
         if (needs_update) {
@@ -126,7 +129,7 @@ void DBCon::init_database()
                 *this->db << s;
             }
         } else if (netfortune_db_exists) {
-            return;
+            return false;
         }
 
         // create general table with db version info
@@ -189,6 +192,70 @@ void DBCon::init_database()
         this->throw_runtime(
             nu::stringify(ex.what(), "\n", ex.get_code(), "\n", ex.get_sql()));
     }
+    return true;
+}
+
+bool DBCon::parse_fortunes() {
+    bool ret = false;
+    this->logger->debug("Starting to parse netfortune files");
+    std::string base_path =
+        this->cfg
+            ->get_qualified_as<std::string>(
+                nu::toml_stringify(nc::FORTUNES, nc::FORTUNES_BASE_FOLDER))
+            .value_or(nc::FORTUNES_BASE_FOlDER_DEFAULT);
+    bfs::path bp(base_path);
+    try {
+        if (bfs::exists(bp) && bfs::is_directory(bp)) {
+            for (const auto &p : bfs::recursive_directory_iterator(bp)) {
+                if (bfs::is_regular_file(p)) {
+                    try {
+                        // we use a transaction for this operation
+                        *this->db << "begin";
+                        std::string category = p.path().filename().string();
+                        bool cat_exists = false;
+                        *this->db
+                                << nu::stringify("SELECT 1 FROM ",
+                                                 dc::TABLE_CATEGORY, " WHERE ",
+                                                 dc::COL_CATEGORY_TEXT, " = ?")
+                                << category >>
+                            [&]() { cat_exists = true; };
+                        if (!cat_exists) {
+                            this->logger->info(
+                                "New category \"" + category +
+                                "\". Will be inserted into the database");
+                            *this->db
+                                << nu::stringify(
+                                       "INSERT INTO ", dc::TABLE_CATEGORY, " (",
+                                       dc::COL_CATEGORY_TEXT, ") VALUES(?);")
+                                << category;
+                        }
+                        std::ifstream f;
+                        f.exceptions(std::ifstream::failbit |
+                                     std::ifstream::badbit);
+                        f.open(p.path().string());
+                        *this->db << "commit";
+
+                    } catch (const sqlite::sqlite_exception &ex) {
+                        *this->db << "rollback";
+                        this->logger->error(nu::stringify(ex.what(), "\n",
+                                                          ex.get_code(), "\n",
+                                                          ex.get_sql()));
+                        this->logger->error("Rolling back last transaction");
+                    } catch (const std::ifstream::failure &ex) {
+                        *this->db << "rollback";
+                        this->logger->error("Exception while parsing file: " +
+                                            p.path().string());
+                        this->logger->error(ex.what());
+                    }
+                }
+            }
+        }
+    } catch (const std::exception &ex) {
+        this->logger->error(
+            nu::stringify("Could not parse fortune files \n ", ex.what()));
+        ret = false;
+    }
+    return ret;
 }
 
 void DBCon::init_fortunes()
