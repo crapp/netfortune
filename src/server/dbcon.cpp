@@ -210,7 +210,6 @@ void DBCon::init_fortunes()
     }
     fs::recursive_directory_iterator it(path);
 
-    bool file_start = true;
     for (auto &&elem : it) {
         auto itarr =
             std::find(arr.begin(), arr.end(), elem.path().stem().string());
@@ -226,9 +225,24 @@ void DBCon::init_fortunes()
                 while (std::getline(file, line)) {
                     if (line.front() == '%') {
                         // fortune is complete
-                        if (file_start) {
-                            file_start = false;
-                            continue;
+                        if (fortune.tellp() != std::streampos(0)) {
+                            std::string insfort = fortune.str();
+                            std::size_t str_hash =
+                                std::hash<std::string>{}(insfort);
+                            try {
+                                // clang-format off
+                                auto ins_fortune = nu::stringify(
+                                        "INSERT INTO ", dc::TABLE_FORTUNE,
+                                        " COLUMNS (", dc::COL_FORTUNE_HASH,
+                                                      dc::COL_FORTUNE_CATID,
+                                                      dc::COL_FORTUNE_TEXT, ")",
+                                        " ");
+                                // clang-format on
+                            } catch (const sqlite::sqlite_exception &ex) {
+                                this->throw_runtime(
+                                    nu::stringify(ex.what(), "\n", ex.get_code(),
+                                                  "\n", ex.get_sql()));
+                            }
                         }
                     } else {
                         fortune << line << "\\n";
